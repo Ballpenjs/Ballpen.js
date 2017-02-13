@@ -27,6 +27,8 @@ module.exports = {
     'handle-callback-err': 0,
     'no-caller': 0,
     'no-multi-spaces': 0,
-    'no-undef': 0
+    'no-undef': 0,
+    'indent': 0,
+    'no-tabs': 0
   }
 }

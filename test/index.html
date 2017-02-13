@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ballpen.js</title>
+</head>
+<body>
+
+<div id="root">
+  <h1 data-model="title"></h1>
+  <div>
+    <div data-model="user"></div>
+    <ul data-list="todos">
+      <li data-list-item="todos">
+        <p data-class="todos:done" data-model="todos:creator"></p>
+        <p data-model="todos:date"></p>
+        <p data-model="todos:content"></p>
+        <ul data-list="todos:members">
+          <li data-list-item="todos:members">
+            <span data-model="todos:members:name"></span>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<script src="../dist/ballpen.min.js"></script>
+<script type="text/javascript">
+
+	let data = {
+	  title: 'todo list',
+	  user: 'mirone',
+	  todos: [
+	    {
+	      creator: 'mirone',
+	      content: 'write mvvm',
+	      done: 'undone',
+	      date: '2016-11-17',
+	      members: [
+	        {
+	          name: 'kaito'
+	        }
+	      ]
+	    }
+	  ]
+	};
+
+	let ballpen = new Ballpen("#root", data);
+
+</script>
+</body>
+</html>	
+
