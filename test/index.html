@@ -3,22 +3,30 @@
 <head>
 	<title>ballpen.js</title>
 </head>
+<style type="text/css">
+    .done {
+        color: red;
+    }
+
+    .title {
+        color: green;
+    }
+
+    .li {
+        color: blue;
+    }
+</style>
 <body>
 
-<div id="root">
-  <h1 data-model="title"></h1>
+<div id="app">
+  <h1 bp-model="title" bp-class="titleClass"></h1>
   <div>
-    <div data-model="user"></div>
-    <ul data-list="todos">
-      <li data-list-item="todos">
-        <p data-class="todos:done" data-model="todos:creator"></p>
-        <p data-model="todos:date"></p>
-        <p data-model="todos:content"></p>
-        <ul data-list="todos:members">
-          <li data-list-item="todos:members">
-            <span data-model="todos:members:name"></span>
-          </li>
-        </ul>
+    <div bp-model="user.name" bp-event:click="showAlert"></div>
+    <ul>
+      <li bp-for="todos" bp-class="liClass">
+        <p bp-for-item="done" bp-class="doneClass"></p>
+        <p bp-for-item="date"></p>
+        <p bp-for-item="content"></p>
       </li>
     </ul>
   </div>
@@ -28,24 +36,36 @@
 <script type="text/javascript">
 
 	let data = {
-	  title: 'todo list',
-	  user: 'mirone',
-	  todos: [
-	    {
-	      creator: 'mirone',
-	      content: 'write mvvm',
-	      done: 'undone',
-	      date: '2016-11-17',
-	      members: [
+        slogan: 'Welcome to use ballpen.js to build flexible web apps!', 
+	    title: 'This is ballpen.js - a tiny MVVM web framework',
+	    user: {
+            name: 'YHSPY'
+        },
+        titleClass: 'title',
+        liClass: 'li',
+        doneClass: 'done',
+	    todos: [
 	        {
-	          name: 'kaito'
-	        }
-	      ]
-	    }
-	  ]
+	            done: 'First commit.',
+	            date: 'xxxx-xx-xx',
+                content: 'First commit - content'
+	        },
+            {
+                done: 'Second commit',
+                date: 'xxxx-xx-xx',
+                content: 'Second commit - content'
+            }
+	    ]
 	};
 
-	let ballpen = new Ballpen("#root", data);
+	let ballpen = new Ballpen("#app", {
+        data: data,
+        event: {
+            showAlert: function() {
+                alert(this.data.slogan);
+            }
+        }
+    });
 
 </script>
 </body>
