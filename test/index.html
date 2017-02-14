@@ -54,11 +54,16 @@
                 done: 'Second commit',
                 date: 'xxxx-xx-xx',
                 content: 'Second commit - content'
+            },
+            {
+                done: 'Third commit',
+                date: 'xxxx-xx-xx',
+                content: 'Third commit - content'
             }
 	    ]
 	};
 
-	let ballpen = new Ballpen("#app", {
+	window.ballpen = new Ballpen("#app", {
         data: data,
         event: {
             showAlert: function() {
