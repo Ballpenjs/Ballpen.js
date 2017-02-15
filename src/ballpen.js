@@ -1,15 +1,22 @@
 class Ballpen {
 
-    constructor(el, dataModel) {
-        this.el = document.querySelector(el);
-        this.dataModel = dataModel;
+    constructor(el, dataModel) { 
         // Init EventList
-        this.initOptions(dataModel);
+        this.init(el, dataModel);
         // Scan lables
         this.scan(this.el);
     };
 
-    initOptions(dataModel) {
+    init(el, dataModel) {
+        this.el = document.querySelector(el);
+
+        // Handle invalid root element
+        if (!this.el) {
+            throw new Error('[Ballpen] Invalid root element!');    
+        }
+
+        this.dataModel = dataModel;
+
         if (dataModel.event) {
             this.eventList = {};
             this.initEventList(dataModel.event);
@@ -38,7 +45,7 @@ class Ballpen {
     scan(el) {
         for (let i = 0; i < el.children.length; i++) {
             let _thisNode = el.children[i];
-
+            console.log(el.children.length);
             // Bind
             this.bind(_thisNode);
 
@@ -78,8 +85,16 @@ class Ballpen {
             if (_attr.name === 'bp-for') {
                 this.bindFor(el);
             }
+
+            if (_attr.name === 'bp-show') {
+                this.bindShow(el);
+            }
         }
     };
+
+    static isHTMLCollection(obj) {
+        return Object.prototype.toString.call(obj) === '[object HTMLCollection]';
+    }
 
     static isArray(arr) {
         return Array.isArray(arr) || Object.prototype.toString.call(arr) === '[object Array]';
@@ -109,6 +124,18 @@ class Ballpen {
             data: _data
         };
     };
+
+    bindShow(el) {
+        const modelName = el.getAttribute('bp-show');
+        const model = Ballpen.parseData(modelName, this.dataList);
+        const elStyle = el.style;
+
+        (!model.data ? elStyle.display = 'none' : (elStyle.removeProperty ? elStyle.removeProperty('display') : elStyle.removeAttribute('display')));
+
+        this.register(this.dataList, model.path, (yetVal, nowVal) => {
+            (!nowVal ? elStyle.display = 'none' : (elStyle.removeProperty ? elStyle.removeProperty('display') : elStyle.removeAttribute('display')));
+        });
+    }
 
     bindModel(el) {
         const modelName = el.getAttribute('bp-model');
@@ -141,35 +168,29 @@ class Ballpen {
         this.eventList[_fnName]['type'] = _fnType;
         
         // Bind listener, set callback fn to global data context
-        el.addEventListener(_fnType, this.eventList[_fnName]['fn'].bind(this.dataList));
+        el.addEventListener(_fnType, () => {
+            this.eventList[_fnName]['fn'].call(this.dataList, el);
+        });
     };
 
     bindFor(el) {
         const modelName = el.getAttribute('bp-for');
+        console.log(modelName);
         const model = Ballpen.parseData(modelName, this.dataList);
 
+        let parentNode = el.parentNode;
         let virtualDiv = document.createDocumentFragment();
 
         for (let i = 0; i < model.data.length; i++) {
             let div = el.cloneNode(true);
+            let _dataPath = `${modelName}.${i}`;
 
             div.removeAttribute('bp-for');
-
-            if (div.getAttribute('bp-class')) {
-                this.bindClass(div);
-            }
-
-            if (div.getAttribute('bp-event')) {
-                this.bindEvent(div);
-            }
-
-            let _dataPath = `${modelName}.${i}`;
 
             virtualDiv.appendChild(this.bindForItems(div, _dataPath));
         }
 
-        el.parentNode.appendChild(virtualDiv);
-        el.remove();
+        parentNode.appendChild(virtualDiv);
 
         // Set register
         this.register(this.dataList, model.path, (yetVal, nowVal) => {
@@ -177,56 +198,112 @@ class Ballpen {
 
             for (let i = 0; i < nowVal.length; i++) {
                 let div = el.cloneNode(true);
-
-                if (div.getAttribute('bp-class')) {
-                    this.bindClass(div);
-                }
-
-                if (div.getAttribute('bp-event')) {
-                    this.bindEvent(div);
-                }
-
                 let _dataPath = `${modelName}.${i}`;
 
                 virtualDiv.appendChild(this.bindForItems(div, _dataPath));
             }
-            console.log(el);
-            el.parentNode.appendChild(virtualDiv);
-            el.remove();
+
+            while (parentNode.firstChild) {
+                parentNode.removeChild(parentNode.firstChild);
+            }
+
+            parentNode.appendChild(virtualDiv);
         });
+
+        el.remove();
     };
 
-    bindForItems(el, data) {
-        for (let j = 0; j < el.children.length; j++) {
-            const _thisNode = el.children[j];
+    bindForItemsRecursion(el, data) {
+        let child = true;
 
-            if (_thisNode.getAttribute('bp-class')) {
-                this.bindClass(_thisNode);
+        if (!Ballpen.isHTMLCollection(el)) {
+            child = false;
+        }
+
+        for (let j = 0; j < (child ? el.length : 1); j++) {
+            const _thisNode = (child ? el[j] : el);
+
+            if (!_thisNode.hasAttributes()) {
+                continue;
             }
 
-            if (_thisNode.getAttribute('bp-event')) {
-                this.bindEvent(_thisNode);
+            // Replace for tag to normal render tag
+            let _attrsFake = _thisNode.attributes;
+            
+            for (let i = 0; i < _attrsFake.length; i++) {
+                const _attr = _attrsFake.item(i);
+
+                if (_attr.name === 'bp-for-show') {
+                    let _thisSubModel = _thisNode.getAttribute('bp-for-show');
+                    let _thisSubModelAbs = data + `.${_thisSubModel}`;
+
+                    _thisNode.setAttribute('bp-show', _thisSubModelAbs);
+                    _thisNode.removeAttribute('bp-for-show');
+                }
+
+                if (_attr.name === 'bp-for-class') {
+                    let _thisSubModel = _thisNode.getAttribute('bp-for-class');
+                    let _thisSubModelAbs = data + `.${_thisSubModel}`;
+
+                    _thisNode.setAttribute('bp-class', _thisSubModelAbs);
+                    _thisNode.removeAttribute('bp-for-class');
+                }
+
+                if (_attr.name === 'bp-for-model') {
+                    let _thisSubModel = _thisNode.getAttribute('bp-for-model');
+
+                    let _thisSubModelAbs;
+
+                    if (/^@\./ig.test(_thisSubModel)) {
+                        let _subModel = _thisSubModel.split('.')[1];
+                        _thisSubModelAbs = data + `.${_subModel}`;
+                    } else if (/^@$/ig.test(_thisSubModel)) {
+                        _thisSubModelAbs = data + i.toString();
+                        console.log(_thisSubModelAbs);
+                    }
+
+                    _thisNode.setAttribute('bp-model', _thisSubModelAbs);
+                    _thisNode.removeAttribute('bp-for-model');
+                }
             }
 
-            if (_thisNode.getAttribute('bp-for-item')) {
-                let _thisSubModel = _thisNode.getAttribute('bp-for-item');
-                let _thisSubModelAbs = data + `.${_thisSubModel}`;
+            // Bind normal render tag
+            let _attrsMain = _thisNode.attributes;
+            
+            for (let i = 0; i < _attrsMain.length; i++) {
+                const _attr = _attrsMain.item(i);
 
-                _thisNode.setAttribute('bp-model', _thisSubModelAbs);
-                _thisNode.removeAttribute('bp-for-item');
-            }
+                if (_attr.name === 'bp-class') {
+                    this.bindClass(_thisNode);
+                }
 
-            if (_thisNode.getAttribute('bp-model')) {
-                this.bindModel(_thisNode);
+                if (/bp-event:/ig.test(_attr.name)) {
+                    let _fnType = _attr.name.split(':')[1];
+                    let _fnName = _attr.value;
+                    this.bindEvent(_thisNode, _fnName, _fnType);
+                }
+
+                if (_attr.name === 'bp-model') {
+                    this.bindModel(_thisNode);
+                }
+
+                if (_attr.name === 'bp-show') {
+                    this.bindShow(_thisNode);
+                }
+
+                // Render 'for' list in another 'for' had not been implemented yet
             }
 
             if (_thisNode.children.length > 0) {
-                this.bindForItems(_thisNode);
+                this.bindForItemsRecursion(_thisNode.children, data);
             }
         }
-
-        return el;
     };
+
+    bindForItems(el, data) {
+        this.bindForItemsRecursion(el, data);
+        return el;
+    }
 
     observePath(obj, paths, fns) {
         if (Ballpen.isArray(paths)) {
@@ -295,13 +372,14 @@ class Ballpen {
                 writable: true,
                 value: (...args) => {
                     let yetVal = arr.slice();
-                    let nowVal = arrayProto[method].call(arr, ...args);
+                    let resultVal = arrayProto[method].call(arr, ...args);
+                    let nowVal = arr;
                     // Callback
                     fns && fns.forEach((fn) => {
                         fn.call(this, yetVal, nowVal);
                     }); 
 
-                    return nowVal;
+                    return resultVal;
                 } 
             });
         });

@@ -19,14 +19,22 @@
 <body>
 
 <div id="app">
-  <h1 bp-model="title" bp-class="titleClass"></h1>
+  <h1 bp-model="title" bp-class="titleClass" bp-show="see"></h1>
   <div>
-    <div bp-model="user.name" bp-event:click="showAlert"></div>
+    <div bp-model="user.name" bp-event:click="showAlert" bp-show:"see"></div>
+    <input bp-model="user.name" bp-event:input="sync"></input>
+    <input bp-model="user.name" bp-event:input="sync"></input>
+    <button bp-event:click="click">toggle</button>
     <ul>
-      <li bp-for="todos" bp-class="liClass">
-        <p bp-for-item="done" bp-class="doneClass"></p>
-        <p bp-for-item="date"></p>
-        <p bp-for-item="content"></p>
+      <li name="1" bp-for="todos" bp-class="liClass" bp-for-show="show">
+        <p bp-for-model="@.done" bp-class="doneClass" bp-for-show="show"></p>
+        <p bp-for-model="@.date"></p>
+        <p bp-for-model="@.content"></p>
+      </li>
+      <li name="2" bp-for="todos" bp-class="liClass" bp-for-show="show">
+        <p bp-for-model="@.done" bp-class="doneClass" bp-for-show="show"></p>
+        <p bp-for-model="@.date"></p>
+        <p bp-for-model="@.content"></p>
       </li>
     </ul>
   </div>
@@ -44,21 +52,26 @@
         titleClass: 'title',
         liClass: 'li',
         doneClass: 'done',
+        see: true,
+        sequence: [1, 2, 4],
 	    todos: [
 	        {
 	            done: 'First commit.',
 	            date: 'xxxx-xx-xx',
-                content: 'First commit - content'
+                content: 'First commit - content',
+                show: true
 	        },
             {
                 done: 'Second commit',
                 date: 'xxxx-xx-xx',
-                content: 'Second commit - content'
+                content: 'Second commit - content',
+                show: true
             },
             {
                 done: 'Third commit',
                 date: 'xxxx-xx-xx',
-                content: 'Third commit - content'
+                content: 'Third commit - content',
+                show: false
             }
 	    ]
 	};
@@ -66,8 +79,14 @@
 	window.ballpen = new Ballpen("#app", {
         data: data,
         event: {
-            showAlert: function() {
+            showAlert: function(el) {
                 alert(this.slogan);
+            },
+            sync: function(el) {
+                this.user.name = el.value;
+            },
+            click: function(el) {
+                this.see = !this.see;
             }
         }
     });
