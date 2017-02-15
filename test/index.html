@@ -26,6 +26,14 @@
     <input bp-model="user.name" bp-event:input="sync"></input>
     <button bp-event:click="click">toggle</button>
     <ul>
+      <p bp-for="sequence">
+        <span bp-for-model="@"></span>
+      </p>
+
+      <p bp-for="sequence">
+        <span bp-for-model="@"></span>
+      </p>
+
       <li name="1" bp-for="todos" bp-class="liClass" bp-for-show="show">
         <p bp-for-model="@.done" bp-class="doneClass" bp-for-show="show"></p>
         <p bp-for-model="@.date"></p>
@@ -36,6 +44,7 @@
         <p bp-for-model="@.date"></p>
         <p bp-for-model="@.content"></p>
       </li>
+      
     </ul>
   </div>
 </div>

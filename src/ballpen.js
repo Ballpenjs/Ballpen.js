@@ -45,7 +45,7 @@ class Ballpen {
     scan(el) {
         for (let i = 0; i < el.children.length; i++) {
             let _thisNode = el.children[i];
-            console.log(el.children.length);
+            console.log(_thisNode);
             // Bind
             this.bind(_thisNode);
 
@@ -94,15 +94,15 @@ class Ballpen {
 
     static isHTMLCollection(obj) {
         return Object.prototype.toString.call(obj) === '[object HTMLCollection]';
-    }
+    };
 
     static isArray(arr) {
         return Array.isArray(arr) || Object.prototype.toString.call(arr) === '[object Array]';
-    }
+    };
 
     static isObject(obj) {
         return Object.prototype.toString.call(obj) === '[object Object]';
-    }
+    };
 
     static parseData(str, dataObj) {
         const _list = str.split('.');
@@ -135,7 +135,7 @@ class Ballpen {
         this.register(this.dataList, model.path, (yetVal, nowVal) => {
             (!nowVal ? elStyle.display = 'none' : (elStyle.removeProperty ? elStyle.removeProperty('display') : elStyle.removeAttribute('display')));
         });
-    }
+    };
 
     bindModel(el) {
         const modelName = el.getAttribute('bp-model');
@@ -175,7 +175,6 @@ class Ballpen {
 
     bindFor(el) {
         const modelName = el.getAttribute('bp-for');
-        console.log(modelName);
         const model = Ballpen.parseData(modelName, this.dataList);
 
         let parentNode = el.parentNode;
@@ -223,7 +222,7 @@ class Ballpen {
         for (let j = 0; j < (child ? el.length : 1); j++) {
             const _thisNode = (child ? el[j] : el);
 
-            if (!_thisNode.hasAttributes()) {
+            if (!_thisNode.hasAttributes() && child) {
                 continue;
             }
 
@@ -251,15 +250,13 @@ class Ballpen {
 
                 if (_attr.name === 'bp-for-model') {
                     let _thisSubModel = _thisNode.getAttribute('bp-for-model');
-
                     let _thisSubModelAbs;
 
                     if (/^@\./ig.test(_thisSubModel)) {
                         let _subModel = _thisSubModel.split('.')[1];
                         _thisSubModelAbs = data + `.${_subModel}`;
                     } else if (/^@$/ig.test(_thisSubModel)) {
-                        _thisSubModelAbs = data + i.toString();
-                        console.log(_thisSubModelAbs);
+                        _thisSubModelAbs = data;
                     }
 
                     _thisNode.setAttribute('bp-model', _thisSubModelAbs);
@@ -303,7 +300,7 @@ class Ballpen {
     bindForItems(el, data) {
         this.bindForItemsRecursion(el, data);
         return el;
-    }
+    };
 
     observePath(obj, paths, fns) {
         if (Ballpen.isArray(paths)) {
