@@ -35,11 +35,13 @@
       </p>
 
       <li name="1" bp-for="todos" bp-class="liClass" bp-for-show="show">
+        <h1 bp-for-model="@{index}"></h1>
         <p bp-for-model="@.done" bp-class="doneClass" bp-for-show="show"></p>
         <p bp-for-model="@.date"></p>
         <p bp-for-model="@.content"></p>
       </li>
       <li name="2" bp-for="todos" bp-class="liClass" bp-for-show="show">
+        <h1 bp-for-model="@{index}"></h1>
         <p bp-for-model="@.done" bp-class="doneClass" bp-for-show="show"></p>
         <p bp-for-model="@.date"></p>
         <p bp-for-model="@.content"></p>

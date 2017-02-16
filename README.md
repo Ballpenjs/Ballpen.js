@@ -22,6 +22,7 @@ A tiny mvvm framework ready for building flexible web apps.
   <br/>
   <ul>
     <li bp-for="todo" bp-class="todoStyle">
+        <h2 bp-for-model="@{index}"></h2>
         <p bp-for-model="@.title"></p>
         <p bp-for-model="@.content"></p>
         <p bp-for-model="@.done"></p>

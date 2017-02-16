@@ -3,7 +3,7 @@ class Ballpen {
     constructor(el, dataModel) { 
         // Init EventList
         this.init(el, dataModel);
-        // Scan lables
+        // Scan directives
         this.scan(this.el);
     };
 
@@ -27,7 +27,7 @@ class Ballpen {
             this.modelList = {};
         }
 
-        // Others
+        // Other initializations
         this.registers = [];
     };
 
@@ -139,13 +139,21 @@ class Ballpen {
 
     bindModel(el) {
         const modelName = el.getAttribute('bp-model');
-        const model = Ballpen.parseData(modelName, this.dataList);
 
-        (el.tagName === 'INPUT' ? el.value = model.data : el.innerText = model.data);
+        // Handel 'for' list index
+        if (/^@{([\d]+)}$/ig.test(modelName)) {
+            let index = modelName.match(/^@{([\d]+)}$/)[1];
 
-        this.register(this.dataList, model.path, (yetVal, nowVal) => {
-            (el.tagName === 'INPUT' ? el.value = nowVal : el.innerText = nowVal);
-        });
+            (el.tagName === 'INPUT' ? el.value = index : el.innerText = index);
+        } else {
+            const model = Ballpen.parseData(modelName, this.dataList);
+
+            (el.tagName === 'INPUT' ? el.value = model.data : el.innerText = model.data);
+
+            this.register(this.dataList, model.path, (yetVal, nowVal) => {
+                (el.tagName === 'INPUT' ? el.value = nowVal : el.innerText = nowVal);
+            });
+        }
     };
 
     bindClass(el) {
@@ -186,7 +194,7 @@ class Ballpen {
 
             div.removeAttribute('bp-for');
 
-            virtualDiv.appendChild(this.bindForItems(div, _dataPath));
+            virtualDiv.appendChild(this.bindForItems(div, _dataPath, i));
         }
 
         parentNode.appendChild(virtualDiv);
@@ -199,7 +207,7 @@ class Ballpen {
                 let div = el.cloneNode(true);
                 let _dataPath = `${modelName}.${i}`;
 
-                virtualDiv.appendChild(this.bindForItems(div, _dataPath));
+                virtualDiv.appendChild(this.bindForItems(div, _dataPath, i));
             }
 
             while (parentNode.firstChild) {
@@ -212,7 +220,7 @@ class Ballpen {
         el.remove();
     };
 
-    bindForItemsRecursion(el, data) {
+    bindForItemsRecursion(el, data, itemIndex) {
         let child = true;
 
         if (!Ballpen.isHTMLCollection(el)) {
@@ -257,6 +265,8 @@ class Ballpen {
                         _thisSubModelAbs = data + `.${_subModel}`;
                     } else if (/^@$/ig.test(_thisSubModel)) {
                         _thisSubModelAbs = data;
+                    } else if (/^@{index}$/ig.test(_thisSubModel)) {
+                        _thisSubModelAbs = `@{${itemIndex}}`;
                     }
 
                     _thisNode.setAttribute('bp-model', _thisSubModelAbs);
@@ -292,13 +302,13 @@ class Ballpen {
             }
 
             if (_thisNode.children.length > 0) {
-                this.bindForItemsRecursion(_thisNode.children, data);
+                this.bindForItemsRecursion(_thisNode.children, data, itemIndex);
             }
         }
     };
 
-    bindForItems(el, data) {
-        this.bindForItemsRecursion(el, data);
+    bindForItems(el, data, itemIndex) {
+        this.bindForItemsRecursion(el, data, itemIndex);
         return el;
     };
 
@@ -382,7 +392,7 @@ class Ballpen {
         });
         /* eslint-disable */
         arr.__proto__ = hijackProto;
-        arr.__proto__.__proto__ === Array.prototype; // true
+        // arr.__proto__.__proto__ === Array.prototype; // true
     };
 
     register(obj, key, fn) {
