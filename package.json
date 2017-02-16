@@ -41,6 +41,7 @@
     "rollup-plugin-filesize": "^1.0.1",
     "rollup-plugin-node-resolve": "^2.0.0",
     "rollup-plugin-uglify": "^1.0.1",
+    "rollup-watch": "^3.2.2",
     "shelljs": "^0.7.6"
   },
   "dependencies": {

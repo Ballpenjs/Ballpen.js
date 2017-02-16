@@ -1,5 +1,5 @@
 # Ballpen.js
-A tiny mvvm framework ready for building flexible web apps.
+A tiny MVVM framework ready for building flexible web apps.
 
 ## How to install?
 
@@ -21,49 +21,66 @@ A tiny mvvm framework ready for building flexible web apps.
   <button bp-event:click="foldTitle">Toggle Title</button>
   <br/>
   <ul>
-    <li bp-for="todo" bp-class="todoStyle">
-        <h2 bp-for-model="@{index}"></h2>
-        <p bp-for-model="@.title"></p>
-        <p bp-for-model="@.content"></p>
-        <p bp-for-model="@.done"></p>
+    <li bp-for="todoList" bp-class="todoStyle" bp-show="@.show">
+        <!-- Get the 'for' circulation index by @{index}, '@' means current 'bp-for' context, '{}' means current circulation's inner attribute -->
+        <h2 bp-model="@{index}"></h2>
+        <!-- Get corresponding attributes -->
+        <p bp-model="@.title"></p>
+        <p bp-model="@.content"></p>
+        <!-- Set an event handler within this circulation scope with '@:' -->
+        <button bp-event:click="@:doneTodoItem">- Done -</button>
     </li>
   </ul>
+  <!-- Bind custimized labels with 'bp-bind' -->
+  <button bp-bind:name="name" bp-event:click="reverseName" bp-model="name"></button>
 </div>
 ```
 
 ```javascript
 // javascript
-ballpen = new Ballpen("#app", {
-    data: {
-        see: true,
-        bundle: {
-            title: "It's a sunny day!"
-        },
-        todo: [
-            {
-                title: "Health",
-                content: "Get up earlier!",
-                done: true
-            },
-            {
-                title: "Health",
-                content: "Never stay up too late!",
-                done: false
-            },
-            {
-                title: "Emotion",
-                content: "Happy everyday!",
-                done: false
-            }
-        ],
-        todoStyle: "todo-style"
+let data = {
+    see: true,
+    bundle: {
+        title: "It's a sunny day!"
     },
-    event: {
-        foldTitle: function(el) {
-            this.see = !this.see;
+    todoList: [
+        {
+            title: "Health",
+            content: "Get up earlier!",
+            show: true
         },
-        syncTitle: function(el) {
-            this.bundle.title = el.value;
+        {
+            title: "Health",
+            content: "Never stay up too late!",
+            show: true
+        },
+        {
+            title: "Emotion",
+            content: "Happy everyday!",
+            show: false
+        }
+    ],
+    todoStyle: "todo-style",
+    name: "YHSPY - Ballpen.js"
+};
+
+new Ballpen("#app", {
+    data: data,
+    event: {
+        foldTitle: (el, context) => {
+            // Global context => data
+            context.see = !context.see;
+        },
+        syncTitle: (el, context) => {
+            // Global context => data
+            context.bundle.title = el.value; // 'el' is the dom element you bind with this method;
+        },
+        doneTodoItem: (el, context) => {
+            // 'bp-for' context => data.todoList
+            context.show = false;
+        },
+        reverseName: (el, context) => {
+            context.name = context.name.split('').reverse().join('');
         }
     }
 });

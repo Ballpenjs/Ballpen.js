@@ -19,8 +19,10 @@ if (require.main === module) {
 	return;
 }
 
+// Compile folder
 var buildDistPath = path.resolve(__dirname, '../dist');
 
+// Source and output files name
 var buildDistPathFile = path.resolve(__dirname, '../dist/ballpen.min.js');
 var sourcePathFile = path.resolve(__dirname, '../src/ballpen.js');
 

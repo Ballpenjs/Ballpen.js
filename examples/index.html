@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Ballpen.js</title>
+</head>
+<style type="text/css">
+    .todo-style {
+        color: red;
+        font-weight: bold;
+    }
+</style>
+<body>
+
+<div id="app">
+  <h1 bp-model="header.title" bp-show="showTitle"></h1>
+  <input type="text" bp-model="header.title" bp-event:input="syncTitle">
+  <button bp-event:click="foldTitle" bp-model="header.btnTitle"></button>
+  <br/>
+  <ul>
+    <li bp-for="todoList" bp-class="todoStyle" bp-show="@.showTodo">
+        <!-- Get the 'for' circulation index by @{index}, '@' means current 'bp-for' context, '{}' means current circulation's inner attribute -->
+        <h2 bp-model="@{index}"></h2>
+        <!-- Get corresponding attributes -->
+        <p bp-model="@.title"></p>
+        <p bp-model="@.content"></p>
+        <!-- Set an event handler within this circulation scope with '@:' -->
+        <button bp-event:click="@:doneTodoItem">- Done -</button>
+    </li>
+  </ul>
+  <button bp-bind:name="name" bp-event:click="reverseName" bp-model="name"></button>
+</div>
+
+<script src="../dist/ballpen.min.js"></script>
+<script type="text/javascript">
+
+    let data = {
+        showTitle: true,
+        header: {
+            title: "It's a sunny day!",
+            btnTitle: "Toggle Title"
+        },
+        todoList: [
+            {
+                title: "Health",
+                content: "Get up earlier!",
+                showTodo: true
+            },
+            {
+                title: "Health",
+                content: "Never stay up too late!",
+                showTodo: true
+            },
+            {
+                title: "Emotion",
+                content: "Happy everyday!",
+                showTodo: true
+            }
+        ],
+        todoStyle: "todo-style",
+        name: "YHSPY - Ballpen.js"
+    };
+
+	window.aa = new Ballpen("#app", {
+        data: data,
+        event: {
+            foldTitle: (el, context) => {
+                // Global context => data
+                context.showTitle = !context.showTitle;
+            },
+            syncTitle: (el, context) => {
+                // Global context => data
+                context.header.title = el.value; // 'el' is the dom element you bind with this method;
+            },
+            doneTodoItem: (el, context) => {
+                // 'bp-for' context => data.todoList
+                context.showTodo = false;
+            },
+            reverseName: (el, context) => {
+                context.name = context.name.split('').reverse().join('');
+            }
+        },
+        watchers: {
+            "todoList": (...args) => {
+                console.log(...args);
+            }
+        }
+    });
+
+</script>
+</body>
+</html>	
+

@@ -1,2 +1,8 @@
 npm-debug.log
 .git
+build/
+.babelrc
+.eslintrc.js
+.eslintignore
+rollup.config.js
+.gitignore

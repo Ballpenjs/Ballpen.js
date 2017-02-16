@@ -27,8 +27,24 @@ class Ballpen {
             this.modelList = {};
         }
 
+        if (dataModel.watchers) {
+            this.watchersHook = [];
+
+            let _watchers = dataModel.watchers;
+
+            for (let watcher in _watchers) {
+                const _dataPath = watcher;
+                const _dataHook = _watchers[watcher];
+
+                this.watchersHook.push({
+                    _dataPath, _dataHook
+                });
+            }
+        }
+
         // Other initializations
         this.registers = [];
+        this.removedChildNodes = [];
     };
 
     initEventList(eventList) {
@@ -42,21 +58,33 @@ class Ballpen {
         }
     };
 
-    scan(el) {
+    scan(el, init = true) {
         for (let i = 0; i < el.children.length; i++) {
             let _thisNode = el.children[i];
-            console.log(_thisNode);
+            let innerText = el.innerHTML;
+     
             // Bind
             this.bind(_thisNode);
 
             // Recursion
             if (_thisNode.children.length > 0) {
-                this.scan(_thisNode);
+                this.scan(_thisNode, false);
             }
         }
 
-        this.attach();
+        if (init) {
+            // Update view
+            this.update();
+            // Attach observers
+            this.attach();
+        }   
     };
+
+    update() {
+        this.removedChildNodes.forEach((node) => {
+            node.remove();
+        });
+    }
 
     bind(el) {
         if (!el.hasAttributes()) {
@@ -79,7 +107,13 @@ class Ballpen {
             if (/bp-event:/ig.test(_attr.name)) {
                 let _fnType = _attr.name.split(':')[1];
                 let _fnName = _attr.value;
-                this.bindEvent(el, _fnName, _fnType);
+                this.bindEvent(el, _fnName, _fnType, this.dataList);
+            }
+
+            if (/bp-bind:/ig.test(_attr.name)) {
+                let _bindKey   = _attr.name.split(':')[1];
+                let _bindValue = _attr.value;
+                this.bindBind(el, _bindValue, _bindKey);
             }
 
             if (_attr.name === 'bp-for') {
@@ -125,61 +159,98 @@ class Ballpen {
         };
     };
 
+    static ignoreInnerDirectives(directiveValue, exceptList, fn, ...args) {
+        exceptList.forEach((regexp) => {
+            if (regexp.test(directiveValue)) {
+                fn && fn.call(this, ...args);
+            }
+        });
+
+        if (!/^@/ig.test(directiveValue)) {
+            fn && fn.call(this, ...args);
+        }
+    }
+
     bindShow(el) {
         const modelName = el.getAttribute('bp-show');
-        const model = Ballpen.parseData(modelName, this.dataList);
-        const elStyle = el.style;
 
-        (!model.data ? elStyle.display = 'none' : (elStyle.removeProperty ? elStyle.removeProperty('display') : elStyle.removeAttribute('display')));
+        Ballpen.ignoreInnerDirectives(modelName, [], (el) => {
+            const model = Ballpen.parseData(modelName, this.dataList);
 
-        this.register(this.dataList, model.path, (yetVal, nowVal) => {
-            (!nowVal ? elStyle.display = 'none' : (elStyle.removeProperty ? elStyle.removeProperty('display') : elStyle.removeAttribute('display')));
-        });
+            const elStyle = el.style;
+ 
+            (!model.data ? elStyle.display = 'none' : (elStyle.removeProperty ? elStyle.removeProperty('display') : elStyle.removeAttribute('display')));
+
+            this.register(this.dataList, model.path, (yetVal, nowVal) => {
+                (!nowVal ? elStyle.display = 'none' : (elStyle.removeProperty ? elStyle.removeProperty('display') : elStyle.removeAttribute('display')));
+            });
+        }, el);
     };
 
     bindModel(el) {
         const modelName = el.getAttribute('bp-model');
 
-        // Handel 'for' list index
-        if (/^@{([\d]+)}$/ig.test(modelName)) {
-            let index = modelName.match(/^@{([\d]+)}$/)[1];
+        Ballpen.ignoreInnerDirectives(modelName, [/^@{([\d]+)}$/ig], (el) => {
+            // Handel 'for' list index
+            if (/^@{([\d]+)}$/ig.test(modelName)) {
+                let index = modelName.match(/^@{([\d]+)}$/)[1];
 
-            (el.tagName === 'INPUT' ? el.value = index : el.innerText = index);
-        } else {
-            const model = Ballpen.parseData(modelName, this.dataList);
+                (el.tagName === 'INPUT' ? el.value = index : el.innerText = index);
+            } else {
+                const model = Ballpen.parseData(modelName, this.dataList);
 
-            (el.tagName === 'INPUT' ? el.value = model.data : el.innerText = model.data);
+                (el.tagName === 'INPUT' ? el.value = model.data : el.innerText = model.data);
 
-            this.register(this.dataList, model.path, (yetVal, nowVal) => {
-                (el.tagName === 'INPUT' ? el.value = nowVal : el.innerText = nowVal);
-            });
-        }
+                this.register(this.dataList, model.path, (yetVal, nowVal) => {
+                    (el.tagName === 'INPUT' ? el.value = nowVal : el.innerText = nowVal);
+                });
+            }
+        }, el);
     };
 
     bindClass(el) {
         const modelName = el.getAttribute('bp-class');
-        const model = Ballpen.parseData(modelName, this.dataList);
 
-        if (!el.classList.contains(model.data)) {
-            el.classList.add(model.data);
-        }
+        Ballpen.ignoreInnerDirectives(modelName, [], (el) => {
+            const model = Ballpen.parseData(modelName, this.dataList);
 
-        this.register(this.dataList, model.path, (yetVal, nowVal) => {
-            if (!el.classList.contains(nowVal)) {
-                el.classList.add(nowVal);
+            if (!el.classList.contains(model.data)) {
+                el.classList.add(model.data);
             }
-        });
+
+            this.register(this.dataList, model.path, (yetVal, nowVal) => {
+                if (!el.classList.contains(nowVal)) {
+                    el.classList.add(nowVal);
+                }
+            });
+        }, el);
     };
 
-    bindEvent(el, _fnName, _fnType) {
-        // Update global event list
-        this.eventList[_fnName]['type'] = _fnType;
-        
-        // Bind listener, set callback fn to global data context
-        el.addEventListener(_fnType, () => {
-            this.eventList[_fnName]['fn'].call(this.dataList, el);
-        });
+    bindEvent(el, _fnName, _fnType, context) {
+        Ballpen.ignoreInnerDirectives(_fnName, [], (el, _fnName, _fnType, context) => {
+            // Update global event list
+            this.eventList[_fnName]['type'] = _fnType;
+            
+            // Bind listener, set callback fn to global data context
+            el.addEventListener(_fnType, () => {
+                this.eventList[_fnName]['fn'].call(this.dataList, el, context);
+            });
+        }, el, _fnName, _fnType, context);
     };
+
+    bindBind(el, _bindValue, _bindKey) {
+        Ballpen.ignoreInnerDirectives(_bindValue, [], (el, _bindValue, _bindKey) => {
+            const model = Ballpen.parseData(_bindValue, this.dataList);
+
+            // Set customized attribute
+            el.setAttribute(_bindKey, model.data);
+            
+            // Bind listener, set callback fn to global data context
+            this.register(this.dataList, model.path, (yetVal, nowVal) => {
+                el.setAttribute(_bindKey, nowVal);
+            });
+        }, el, _bindValue, _bindKey);
+    }
 
     bindFor(el) {
         const modelName = el.getAttribute('bp-for');
@@ -217,7 +288,7 @@ class Ballpen {
             parentNode.appendChild(virtualDiv);
         });
 
-        el.remove();
+        this.removedChildNodes.push(el);
     };
 
     bindForItemsRecursion(el, data, itemIndex) {
@@ -234,31 +305,42 @@ class Ballpen {
                 continue;
             }
 
-            // Replace for tag to normal render tag
-            let _attrsFake = _thisNode.attributes;
+            // Bind normal render tag
+            let _attrsMain = _thisNode.attributes;
             
-            for (let i = 0; i < _attrsFake.length; i++) {
-                const _attr = _attrsFake.item(i);
+            for (let i = 0; i < _attrsMain.length; i++) {
+                const _attr = _attrsMain.item(i);
 
-                if (_attr.name === 'bp-for-show') {
-                    let _thisSubModel = _thisNode.getAttribute('bp-for-show');
-                    let _thisSubModelAbs = data + `.${_thisSubModel}`;
+                if (_attr.name === 'bp-class') {
+                    let _thisSubModel = _thisNode.getAttribute('bp-class');
+                    let _thisSubModelAbs = _thisSubModel;
 
-                    _thisNode.setAttribute('bp-show', _thisSubModelAbs);
-                    _thisNode.removeAttribute('bp-for-show');
+                    if (/^@\./ig.test(_thisSubModel)) {
+                        let _subModel = _thisSubModel.split('.')[1];
+                        _thisSubModelAbs = data + `.${_subModel}`;
+                    } else if (/^@$/ig.test(_thisSubModel)) {
+                        _thisSubModelAbs = data;
+                    } 
+
+                    if (_thisSubModelAbs !== _thisSubModel) {
+                        _thisNode.setAttribute('bp-class', _thisSubModelAbs);
+                    }
+
+                    this.bindClass(_thisNode);
                 }
 
-                if (_attr.name === 'bp-for-class') {
-                    let _thisSubModel = _thisNode.getAttribute('bp-for-class');
-                    let _thisSubModelAbs = data + `.${_thisSubModel}`;
+                if (/bp-event:/ig.test(_attr.name)) {
+                    let _fnType = _attr.name.split(':')[1];
+                    let _fnName = _attr.value;
 
-                    _thisNode.setAttribute('bp-class', _thisSubModelAbs);
-                    _thisNode.removeAttribute('bp-for-class');
+                    if (/^@:/ig.test(_fnName)) {
+                        this.bindEvent(_thisNode, _fnName.split(':')[1], _fnType, Ballpen.parseData(data, this.dataList).data);
+                    }
                 }
 
-                if (_attr.name === 'bp-for-model') {
-                    let _thisSubModel = _thisNode.getAttribute('bp-for-model');
-                    let _thisSubModelAbs;
+                if (_attr.name === 'bp-model') {
+                    let _thisSubModel = _thisNode.getAttribute('bp-model');
+                    let _thisSubModelAbs = _thisSubModel;
 
                     if (/^@\./ig.test(_thisSubModel)) {
                         let _subModel = _thisSubModel.split('.')[1];
@@ -269,32 +351,28 @@ class Ballpen {
                         _thisSubModelAbs = `@{${itemIndex}}`;
                     }
 
-                    _thisNode.setAttribute('bp-model', _thisSubModelAbs);
-                    _thisNode.removeAttribute('bp-for-model');
-                }
-            }
+                    if (_thisSubModelAbs !== _thisSubModel) {
+                        _thisNode.setAttribute('bp-model', _thisSubModelAbs);
+                    }
 
-            // Bind normal render tag
-            let _attrsMain = _thisNode.attributes;
-            
-            for (let i = 0; i < _attrsMain.length; i++) {
-                const _attr = _attrsMain.item(i);
-
-                if (_attr.name === 'bp-class') {
-                    this.bindClass(_thisNode);
-                }
-
-                if (/bp-event:/ig.test(_attr.name)) {
-                    let _fnType = _attr.name.split(':')[1];
-                    let _fnName = _attr.value;
-                    this.bindEvent(_thisNode, _fnName, _fnType);
-                }
-
-                if (_attr.name === 'bp-model') {
                     this.bindModel(_thisNode);
                 }
 
                 if (_attr.name === 'bp-show') {
+                    let _thisSubModel = _thisNode.getAttribute('bp-show');
+                    let _thisSubModelAbs = _thisSubModel;
+
+                    if (/^@\./ig.test(_thisSubModel)) {
+                        let _subModel = _thisSubModel.split('.')[1];
+                        _thisSubModelAbs = data + `.${_subModel}`;
+                    } else if (/^@$/ig.test(_thisSubModel)) {
+                        _thisSubModelAbs = data;
+                    } 
+
+                    if (_thisSubModelAbs !== _thisSubModel) {
+                        _thisNode.setAttribute('bp-show', _thisSubModelAbs);
+                    }
+
                     this.bindShow(_thisNode);
                 }
 
@@ -312,7 +390,7 @@ class Ballpen {
         return el;
     };
 
-    observePath(obj, paths, fns) {
+    observePath(obj, paths, fns, deep = false) {
         if (Ballpen.isArray(paths)) {
             let _path = obj;
             let _key;
@@ -329,21 +407,38 @@ class Ballpen {
                 }
             });
 
-            this.observeKey(_path, _key, fns);
+            this.observeKey(_path, _key, fns, deep);
         }
     };
 
-    observeKey(obj, key, fns = false) {
+    observeKey(obj, key, fns = false, deep = false) {
         if (Ballpen.isArray(key)) {
-            this.observePath(obj, key, fns);
+            this.observePath(obj, key, fns, deep);
         } else {
             let yetVal = obj[key];
             if (Ballpen.isObject(yetVal)) {
+                Object.defineProperty(obj, key, {
+                    get: () => {
+                        return yetVal;
+                    },
+                    set: (nowVal) => {  
+                        if (nowVal !== yetVal) {
+                            fns && fns.forEach((fn) => {
+                                fn.call(this, yetVal, nowVal);
+                            });
+                        }
+
+                        yetVal = nowVal;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+
                 Object.keys(yetVal).forEach((key) => {
-                    this.observeKey(yetVal, key, fns);
+                    this.observeKey(yetVal, key, fns, deep);
                 });
             } else if (Ballpen.isArray(yetVal)) {
-                this.observeArray(yetVal, fns);
+                this.observeArray(yetVal, fns, deep);
             } else {
                 Object.defineProperty(obj, key, {
                     get: () => {
@@ -365,7 +460,7 @@ class Ballpen {
         }
     };
     
-    observeArray(arr, fns = false) {
+    observeArray(arr, fns = false, deep = false) {
         const mutatorMethods = ['copyWithin', 'fill', 'pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'];
         const arrayProto = Array.prototype;
 
@@ -393,9 +488,16 @@ class Ballpen {
         /* eslint-disable */
         arr.__proto__ = hijackProto;
         // arr.__proto__.__proto__ === Array.prototype; // true
+
+        if (deep) {
+            arr.forEach((item, index, arr) => {
+                this.observeKey(arr, index, fns, true);
+            });
+        }
     };
 
-    register(obj, key, fn) {
+    // key: ["todoList", 2]
+    register(obj, key, fn, deep = false) {
         const register = this.registers.find((item) => {
             if (Object.is(item.obj, obj) && (item.key === key || item.key.toString() === key.toString())) {
                 return item;
@@ -408,16 +510,28 @@ class Ballpen {
             this.registers.push({
                 obj: obj,
                 key: key,
-                fns: [fn]
+                fns: [fn],
+                deep: deep
             });
         }
     };
 
     attach() {
+        this.watchersHook.forEach((watcher) => {
+            let model = Ballpen.parseData(watcher._dataPath, this.dataList);
+            // Bind watchers
+            this.register(this.dataList, model.path, (...args) => {
+                watcher._dataHook.call(this, ...args);
+            }, {
+                root: model.path.join('.')
+            });
+        });
+
         this.registers.forEach((register) => {
-            this.observeKey(register.obj, register.key, register.fns);
+            this.observeKey(register.obj, register.key, register.fns, register.deep);
         });
     };
+
 }
 
 export default Ballpen;
