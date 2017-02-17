@@ -4,7 +4,7 @@
 	<title>Ballpen.js</title>
 </head>
 <style type="text/css">
-    .todo-style {
+    .todo {
         color: red;
         font-weight: bold;
     }
@@ -56,7 +56,7 @@
                 showTodo: true
             }
         ],
-        todoStyle: "todo-style",
+        todoStyle: "todo",
         name: "YHSPY - Ballpen.js"
     };
 
@@ -64,14 +64,14 @@
         data: data,
         event: {
             foldTitle: (el, context, args) => {
-                // 'context' -> global data context
+                // 'context' => global data context
                 context.showTitle = !context.showTitle;
             },
             syncTitle: (el, context, args) => {
                 context.header.title = el.value; // 'el' is the dom element you bind with this method
             },
             doneTodoItem: (el, context, args) => {
-                // 'args' -> attached relative data
+                // 'args' =>> attached relative data
                 context.todoList[args.index].showTodo = false;
             },
             reverseName: (el, context, args) => {
@@ -79,9 +79,11 @@
             }
         },
         watchers: {
-            "todoList": {
-                handler: (...args) => {
-                    console.log(...args);
+            "todoList.0": {
+                handler: (newContextData, context) => {
+                    if (!newContextData.showTodo) {
+                        alert("You have done the first todo!");
+                    }
                 }
             }
         }
