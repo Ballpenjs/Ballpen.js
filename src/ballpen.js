@@ -9,6 +9,8 @@ class Ballpen {
 
     init(el, dataModel) {
         this.el = document.querySelector(el);
+        // Hide before render
+        this.el.style.display = 'none';
 
         // Handle invalid root element
         if (!this.el) {
@@ -42,28 +44,7 @@ class Ballpen {
             }
 
             this.watchersHook.forEach((watcherFn, path) => {
-                let _model = Ballpen.parseData(path, this.dataList);
-                let _pathes = path.split('.');
-                let _dataBundle = this.dataList;
-
-                if (!_model.data) {
-                    throw new Error('[Ballpen] "' + path + '" is an invalid watch path.');
-                }
-
-                if (_pathes.length === 1) {
-                    this.dataList[_pathes[0]] = this.setProxy(_model.data, path, watcherFn, watcherFn);
-                } else {
-                    for (let i = 0; i < _pathes.length - 1; i++) {
-                        _dataBundle = _dataBundle[_pathes[i]];
-                        if (!_dataBundle) {
-                            throw new Error('[Ballpen] "' + path + '" is an invalid watch path.');
-                        }
-
-                        if (i === _pathes.length - 2) {
-                            _dataBundle[_pathes[_pathes.length - 1]] = this.setProxy(_model.data, path, watcherFn, watcherFn);
-                        }
-                    }
-                }
+                Ballpen.renderObjectValueByPath(this.dataList, path, this.setProxy(Ballpen.parseData(path, this.dataList).data, path, watcherFn, watcherFn));
             });
         }
 
@@ -76,13 +57,22 @@ class Ballpen {
         let handler = {
             get: (target, property) => {
                 // Run callback
-                fnGet && fnGet.call(this, Ballpen.parseData(path, this.dataListPure).data);
+                fnGet && fnGet.call(this, Ballpen.parseData(path, this.dataListPure).data, Ballpen.parseData(path, this.dataList).data);
                 return target[property];
             },
             set: (target, property, value, receiver) => {
-                target[property] = value;
+                if (/^\$/ig.test(property)) {
+                    var realProperty = property.substring(1);
+                } else {
+                    var realProperty = property;
+                }
+
+                target[realProperty] = value;
                 // Run callback
-                fnSet && fnSet.call(this, Ballpen.parseData(path, this.dataListPure).data);
+                if (realProperty === property) {
+                    fnSet && fnSet.call(this, Ballpen.parseData(path, this.dataListPure).data, Ballpen.parseData(path, this.dataList).data);
+                }
+                
                 // Return true to accept the changes
                 return true;
             },
@@ -91,6 +81,7 @@ class Ballpen {
             }
         };
 
+        // Can not set a proxy on a single value (!! need to be fixed !!)
         return new Proxy(dataList, handler);
     };
 
@@ -124,6 +115,8 @@ class Ballpen {
             this.update();
             // Attach observers
             this.attach();
+            // Show rendered view
+            (this.el.style.removeProperty ? this.el.style.removeProperty('display') : this.el.style.removeAttribute('display'));
         }   
     };
 
@@ -185,6 +178,29 @@ class Ballpen {
         return Object.prototype.toString.call(obj) === '[object Object]';
     };
 
+    static renderObjectValueByPath(obj, path, val) {
+        let _pathes = path.split('.');
+
+        if (typeof Ballpen.parseData(path, obj).data === 'undefined') {
+            throw new Error('[Ballpen] "' + path + '" is an invalid watch path.');
+        }
+
+        if (_pathes.length === 1) {
+            obj[_pathes[0]] = val;
+        } else {
+            for (let i = 0; i < _pathes.length - 1; i++) {
+                obj = obj[_pathes[i]];
+                if (!obj) {
+                    throw new Error('[Ballpen] "' + path + '" is an invalid watch path.');
+                }
+
+                if (i === _pathes.length - 2) {
+                    obj[_pathes[_pathes.length - 1]] = val;
+                }
+            }
+        }
+    };
+
     static parseData(str, dataObj) {
         const _list = str.split('.');
         let _data = dataObj;
@@ -216,7 +232,7 @@ class Ballpen {
         if (!/^@/ig.test(directiveValue)) {
             fn && fn.call(this, ...args);
         }
-    }
+    };
 
     static clone(obj) {
         let copy;
@@ -246,7 +262,7 @@ class Ballpen {
         }
 
         throw new Error('[Ballpen] Unable to copy object, type is not supported.');
-    }
+    };
 
     bindShow(el) {
         const modelName = el.getAttribute('bp-show');
@@ -327,7 +343,7 @@ class Ballpen {
                 el.setAttribute(_bindKey, nowVal);
             });
         }, el, _bindValue, _bindKey);
-    }
+    };
 
     bindFor(el) {
         const modelName = el.getAttribute('bp-for');
@@ -369,11 +385,7 @@ class Ballpen {
     };
 
     bindForItemsRecursion(el, data, itemIndex) {
-        let child = true;
-
-        if (!Ballpen.isHTMLCollection(el)) {
-            child = false;
-        }
+        let child = !!Ballpen.isHTMLCollection(el);
 
         for (let j = 0; j < (child ? el.length : 1); j++) {
             const _thisNode = (child ? el[j] : el);
@@ -469,10 +481,9 @@ class Ballpen {
         return el;
     };
 
-    observePath(obj, objPure, paths, fns) {
+    observePath(obj, rootPath, paths, fns) {
         if (Ballpen.isArray(paths)) {
             let _path = obj;
-            let _pathPure = objPure;
             let _key;
 
             paths.forEach((key, index) => {
@@ -482,24 +493,23 @@ class Ballpen {
 
                 if (index < paths.length - 1) {
                     _path = _path[key];
-                    _pathPure = _pathPure[key];
                 } else {    
                     _key = key;
                 }
             });
 
+            rootPath = paths.join('.');
 
-
-            this.observeKey(_path, _pathPure, _key, fns);
+            this.observeKey(_path, rootPath, _key, fns);
         }
     };
 
-    observeKey(obj, objPure, key, fns = false) {            
+    observeKey(obj, rootPath, key, fns = false) {            
         if (Ballpen.isArray(key)) {
-            this.observePath(obj, objPure, key, fns);
+            this.observePath(obj, rootPath, key, fns);
         } else {
             let yetVal = obj[key];
-            let yetValPure = objPure[key];
+            const currentPath = rootPath;
            
             if (Ballpen.isObject(yetVal)) {
                 Object.defineProperty(obj, key, {
@@ -512,8 +522,9 @@ class Ballpen {
                                 fn.call(this, yetVal, nowVal);
                             });
 
-                            yetValPure = nowVal;
                             yetVal = nowVal;
+
+                            Ballpen.renderObjectValueByPath(this.dataListPure, currentPath, nowVal);
                         }
                     },
                     enumerable: true,
@@ -521,7 +532,7 @@ class Ballpen {
                 });
 
                 Object.keys(yetVal).forEach((key) => {
-                    this.observeKey(yetVal, yetValPure, key, fns);
+                    this.observeKey(yetVal, currentPath + '.' + key, key, fns);
                 });
             } else if (Ballpen.isArray(yetVal)) {
                 Object.defineProperty(obj, key, {
@@ -534,15 +545,16 @@ class Ballpen {
                                 fn.call(this, yetVal, nowVal);
                             });
 
-                            yetValPure = nowVal;
                             yetVal = nowVal;
+
+                            Ballpen.renderObjectValueByPath(this.dataListPure, currentPath, nowVal);
                         }
                     },
                     enumerable: true,
                     configurable: true
                 });
 
-                this.observeArray(yetVal, yetValPure, fns);
+                this.observeArray(yetVal, currentPath, fns);
             } else {
                 Object.defineProperty(obj, key, {
                     get: () => {
@@ -554,10 +566,9 @@ class Ballpen {
                                 fn.call(this, yetVal, nowVal);
                             });
 
-                            yetValPure = nowVal;
                             yetVal = nowVal;
 
-                            console.log(yetValPure);
+                            Ballpen.renderObjectValueByPath(this.dataListPure, currentPath, nowVal);
                         }
                     },
                     enumerable: true,
@@ -567,12 +578,14 @@ class Ballpen {
         }
     };
     
-    observeArray(arr, arrPure, fns = false) {
+    observeArray(arr, rootPath, fns = false) {
         const mutatorMethods = ['copyWithin', 'fill', 'pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'];
         const arrayProto = Array.prototype;
 
         // Prevent from polluting the global 'Array.prototype'
         const hijackProto = Object.create(arrayProto);
+
+        const currentPath = rootPath;
 
         mutatorMethods.forEach((method) => {
             Object.defineProperty(hijackProto, method, {
@@ -582,8 +595,9 @@ class Ballpen {
                 value: (...args) => {
                     let yetVal = arr.slice();
                     let resultVal = arrayProto[method].call(arr, ...args);
-                                    arrayProto[method].call(arrPure, ...args);
                     let nowVal = arr;
+
+                    Ballpen.renderObjectValueByPath(this.dataListPure, currentPath, nowVal);
                     // Callback
                     fns && fns.forEach((fn) => {
                         fn.call(this, yetVal, nowVal);
@@ -610,7 +624,7 @@ class Ballpen {
         } else {
             this.registers.push({
                 obj: obj,
-                objPure: objPure,
+                rootPath: [],
                 key: key,
                 fns: [fn]
             });
@@ -619,7 +633,7 @@ class Ballpen {
 
     attach() {
         this.registers.forEach((register) => {
-            this.observeKey(register.obj, register.objPure, register.key, register.fns);
+            this.observeKey(register.obj, register.rootPath, register.key, register.fns);
         });
     };
 

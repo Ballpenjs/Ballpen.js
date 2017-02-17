@@ -60,7 +60,7 @@
         name: "YHSPY - Ballpen.js"
     };
 
-	window.aa = new Ballpen("#app", {
+	new Ballpen("#app", {
         data: data,
         event: {
             foldTitle: (el, context, args) => {
@@ -83,6 +83,14 @@
                 handler: (newContextData, context) => {
                     if (!newContextData.showTodo) {
                         alert("You have done the first todo!");
+                    }
+                }
+            },
+            "header": {
+                handler: (newContextData, context) => {
+                    if (newContextData.title === 'Ballpen.js') {
+                        // Use '$' to prevent from watcher's capture
+                        context.$btnTitle = 'Yes, this is Ballpen.js';
                     }
                 }
             }
