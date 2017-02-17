@@ -63,25 +63,26 @@
 	window.aa = new Ballpen("#app", {
         data: data,
         event: {
-            foldTitle: (el, context) => {
-                // Global context => data
+            foldTitle: (el, context, args) => {
+                // 'context' -> global data context
                 context.showTitle = !context.showTitle;
             },
-            syncTitle: (el, context) => {
-                // Global context => data
-                context.header.title = el.value; // 'el' is the dom element you bind with this method;
+            syncTitle: (el, context, args) => {
+                context.header.title = el.value; // 'el' is the dom element you bind with this method
             },
-            doneTodoItem: (el, context) => {
-                // 'bp-for' context => data.todoList
-                context.showTodo = false;
+            doneTodoItem: (el, context, args) => {
+                // 'args' -> attached relative data
+                context.todoList[args.index].showTodo = false;
             },
-            reverseName: (el, context) => {
+            reverseName: (el, context, args) => {
                 context.name = context.name.split('').reverse().join('');
             }
         },
         watchers: {
-            "todoList": (...args) => {
-                console.log(...args);
+            "todoList": {
+                handler: (...args) => {
+                    console.log(...args);
+                }
             }
         }
     });
