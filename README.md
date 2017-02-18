@@ -1,13 +1,23 @@
-# Ballpen.js
+<p align="center"><a href="#" target="_blank"><img width="100" src="https://github.com/Becavalier/Ballpen.js/blob/master/art/art.jpg"></a></p>
+
+<p align="center">
+  <a href="https://circleci.com/gh/Becavalier/Ballpen.js/tree/master"><img src="https://img.shields.io/circleci/project/Becavalier/Ballpen.js/master.svg" alt="Build Status"></a>
+  <a href="https://www.npmjs.com/package/ballpen.js"><img src="https://img.shields.io/npm/dt/ballpen.js.svg" alt="Downloads"></a>
+  <a href="https://www.npmjs.com/package/ballpen.js"><img src="https://img.shields.io/npm/v/ballpen.js.svg" alt="Version"></a>
+  <a href="https://www.npmjs.com/package/ballpen.js"><img src="https://img.shields.io/npm/l/ballpen.js.svg" alt="License"></a>
+</p>
+
+## Description
 A tiny, lightweight mvvm framework ready for building flexible web apps.
 
-## How to install?
+
+## Installation
 
 ``` shell
 npm install ballpen.js --save
 ```
 
-## How to use?
+## Usage
 
 ```css
 <!-- html -->
@@ -17,7 +27,15 @@ npm install ballpen.js --save
 }
 ```
 
-```html
+```<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+
+</body>
+</html>
 <!-- html -->
 <div id="app">
   <h1 bp-model="header.title" bp-show="showTitle"></h1>
@@ -105,3 +123,12 @@ new Ballpen("#app", {
     }
 });
 ```
+
+## Documemnt
+
+
+## License
+
+[MIT](http://opensource.org/licenses/MIT)
+
+Copyright (c) 2017-present, YHSPY
