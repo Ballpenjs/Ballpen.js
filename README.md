@@ -41,7 +41,7 @@ new Ballpen("#app", {
     data: data,
     event: {
         foldTitle: (el, context, args) => {
-            context.header.showTitle = !context.header..showTitle;
+            context.header.showTitle = !context.header.showTitle;
         }
     },
     watchers: {
