@@ -1,7 +1,11 @@
 # Ballpen.js
-A tiny MVVM framework ready for building flexible web apps.
+A tiny, lightweight mvvm framework ready for building flexible web apps.
 
 ## How to install?
+
+``` shell
+npm install ballpen.js --save
+```
 
 ## How to use?
 

@@ -6,3 +6,4 @@ build/
 .eslintignore
 rollup.config.js
 .gitignore
+circle.yml

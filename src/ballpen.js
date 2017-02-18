@@ -61,10 +61,11 @@ class Ballpen {
                 return target[property];
             },
             set: (target, property, value, receiver) => {
+                let realProperty;
                 if (/^\$/ig.test(property)) {
-                    var realProperty = property.substring(1);
+                    realProperty = property.substring(1);
                 } else {
-                    var realProperty = property;
+                    realProperty = property;
                 }
 
                 target[realProperty] = value;
