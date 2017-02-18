@@ -1,4 +1,4 @@
-<p align="center"><a href="#" target="_blank"><img width="100" src="https://github.com/Becavalier/Ballpen.js/blob/master/art/art.jpg"></a></p>
+<p align="center"><a href="#" target="_blank"><img width="400px" src="https://github.com/Becavalier/Ballpen.js/blob/master/art/art.png"></a></p>
 
 <p align="center">
   <a href="https://circleci.com/gh/Becavalier/Ballpen.js/tree/master"><img src="https://img.shields.io/circleci/project/Becavalier/Ballpen.js/master.svg" alt="Build Status"></a>
@@ -27,7 +27,8 @@ npm install ballpen.js --save
 }
 ```
 
-```<!DOCTYPE html>
+```html
+<!DOCTYPE html>
 <html>
 <head>
     <title></title>
@@ -124,7 +125,7 @@ new Ballpen("#app", {
 });
 ```
 
-## Documemnt
+## Document
 
 
 ## License
