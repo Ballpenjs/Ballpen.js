@@ -1,4 +1,4 @@
-<p align="center"><a href="#" target="_blank"><img width="400px" src="https://www.yhspy.com/view/github/ballpen.js/art.png"></a></p>
+<p align="center"><a href="#" target="_blank"><img width="400px" src="https://www.yhspy.com/view/github/ballpen.js/art.png?v=v0.1.2-alpha"></a></p>
 
 <p align="center">
   <a href="https://circleci.com/gh/Becavalier/Ballpen.js/tree/master"><img src="https://img.shields.io/circleci/project/Becavalier/Ballpen.js/master.svg" alt="Build Status"></a>

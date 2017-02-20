@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ballpen.js Directive - 'bp-for'</title>
+</head>
+<body>
+
+<div id="app">
+  <h1>Ballpen.js Directive - 'bp-for'</h1>
+<!--   <ul>
+    <li bp-for="@list in lists" bp-show="@list.show">
+        <h2 bp-model="@list[[index]]" bp-class="@list.class"></h2>
+        <p bp-model="@list.title"></p>
+        
+    </li>
+  </ul> -->
+
+  <ul>
+    <li bp-for="@list in lists">
+        <h2 bp-model="@list[[index]]"></h2>
+        <p bp-model="@list.title"></p>
+        <ul>
+            <li bp-for="@innerList in @list.inner">
+                <h2 bp-model="@innerList[[index]]"></h2>
+                <p bp-model="@innerList.title"></p>
+                <p bp-model="@list.title"></p>
+            </li>
+        </ul>
+    </li>
+  </ul>
+<!-- 
+  <ul>
+    <li bp-for="@list in lists">
+        <h2>{{ @list[[index]] }}</h2>
+        <p>{{ @list.title }}</p>
+        <ul>
+            <li bp-for="@innerList in @list.inner">
+                <h2>{{ @innerList[[index]] }}</h2>
+                <p>{{ @innerList.title }}</p>
+                <p>{{ @list.title }}</p>
+            </li>
+        </ul>
+    </li>
+  </ul> -->
+</div> 
+
+<script src="../dist/ballpen.min.js"></script>
+<script type="text/javascript">
+
+    let data = {
+        lists: [
+            {
+                title: "Health",
+                inner: [
+                    {
+                        title: "Inner1 - Health"
+                    },
+                    {
+                        title: "Inner2 - Health"
+                    }
+                ],
+                class: "health",
+                show: true
+            },
+            {
+                title: "Body",
+                inner: [
+                    {
+                        title: "Inner1 - Body"
+                    },
+                    {
+                        title: "Inner2 - Body"
+                    }
+                ],
+                class: "body",
+                show: true
+            },
+            {
+                title: "Emotion",
+                inner: [
+                    {
+                        title: "Inner1 - Emotion"
+                    },
+                    {
+                        title: "Inner2 - Emotion"
+                    }
+                ],
+                class: "emotion",
+                show: true
+            }
+        ]
+    };
+
+    window.a = new Ballpen("#app", {
+        data: data
+    });
+
+</script>
+</body>
+</html> 
+

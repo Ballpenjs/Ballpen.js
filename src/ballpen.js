@@ -100,10 +100,51 @@ class Ballpen {
     scan(el, init = true) {
         for (let i = 0; i < el.children.length; i++) {
             let _thisNode = el.children[i];
-            let innerText = el.innerHTML;
      
             // Bind
-            this.bind(_thisNode);
+            if (_thisNode.hasAttributes()) {
+                let _attrs = _thisNode.attributes;
+                let _attrsArr = [];
+
+                for (let i = 0; i < _attrs.length; i++) {
+                    const _attr = _attrs.item(i);
+                    _attrsArr.push(_attr.name);
+
+                    if (/bp-event:/ig.test(_attr.name)) {
+                        let _fnType = _attr.name.split(':')[1];
+                        let _fnName = _attr.value;
+                        this.bindEvent(_thisNode, _fnName, _fnType, this.dataList);
+                    }
+
+                    if (/bp-bind:/ig.test(_attr.name)) {
+                        let _bindKey   = _attr.name.split(':')[1];
+                        let _bindValue = _attr.value;
+                        this.bindBind(_thisNode, _bindValue, _bindKey);
+                    }
+                }
+
+                if (_attrsArr.includes('bp-for')) {
+                    this.bindFor(_thisNode);
+                    continue;
+                }
+
+                if (_attrsArr.includes('bp-model')) {
+                    this.bindModel(_thisNode);
+                }
+
+                if (_attrsArr.includes('bp-class')) {
+                    this.bindClass(_thisNode);
+                }
+
+                if (_attrsArr.includes('bp-show')) {
+                    this.bindShow(_thisNode);
+                }
+
+                // Moustache binding
+                if (/{{.*}}/ig.test(_thisNode.innerText)) {
+                    this.bindMoustache(_thisNode);
+                }
+            }
 
             // Recursion
             if (_thisNode.children.length > 0) {
@@ -127,46 +168,6 @@ class Ballpen {
         });
     }
 
-    bind(el) {
-        if (!el.hasAttributes()) {
-            return;
-        }
-
-        let _attrs = el.attributes;
-
-        for (let i = 0; i < _attrs.length; i++) {
-            const _attr = _attrs.item(i);
-
-            if (_attr.name === 'bp-model') {
-                this.bindModel(el);
-            }
-
-            if (_attr.name === 'bp-class') {
-                this.bindClass(el);
-            }
-
-            if (/bp-event:/ig.test(_attr.name)) {
-                let _fnType = _attr.name.split(':')[1];
-                let _fnName = _attr.value;
-                this.bindEvent(el, _fnName, _fnType, this.dataList);
-            }
-
-            if (/bp-bind:/ig.test(_attr.name)) {
-                let _bindKey   = _attr.name.split(':')[1];
-                let _bindValue = _attr.value;
-                this.bindBind(el, _bindValue, _bindKey);
-            }
-
-            if (_attr.name === 'bp-for') {
-                this.bindFor(el);
-            }
-
-            if (_attr.name === 'bp-show') {
-                this.bindShow(el);
-            }
-        }
-    };
-
     static isHTMLCollection(obj) {
         return Object.prototype.toString.call(obj) === '[object HTMLCollection]';
     };
@@ -180,23 +181,23 @@ class Ballpen {
     };
 
     static renderObjectValueByPath(obj, path, val) {
-        let _pathes = path.split('.');
+        let _paths = path.split('.');
 
         if (typeof Ballpen.parseData(path, obj).data === 'undefined') {
             throw new Error('[Ballpen] "' + path + '" is an invalid watch path.');
         }
 
-        if (_pathes.length === 1) {
-            obj[_pathes[0]] = val;
+        if (_paths.length === 1) {
+            obj[_paths[0]] = val;
         } else {
-            for (let i = 0; i < _pathes.length - 1; i++) {
-                obj = obj[_pathes[i]];
+            for (let i = 0; i < _paths.length - 1; i++) {
+                obj = obj[_paths[i]];
                 if (!obj) {
                     throw new Error('[Ballpen] "' + path + '" is an invalid watch path.');
                 }
 
-                if (i === _pathes.length - 2) {
-                    obj[_pathes[_pathes.length - 1]] = val;
+                if (i === _paths.length - 2) {
+                    obj[_paths[_paths.length - 1]] = val;
                 }
             }
         }
@@ -265,8 +266,13 @@ class Ballpen {
         throw new Error('[Ballpen] Unable to copy object, type is not supported.');
     };
 
-    bindShow(el) {
-        const modelName = el.getAttribute('bp-show');
+    static wrapAbsPath(rootPath, relPath) {
+        return (Ballpen.isArray(rootPath) && rootPath.length > 0 ? (rootPath.join('.') + '.') : (rootPath.toString().length > 0 ? (rootPath.toString() + '.') : '')) + 
+        (Ballpen.isArray(relPath) && relPath.length > 0 ? relPath.join('.') : (relPath.toString().length > 0 ? relPath.toString() : ''));
+    };
+
+    bindShow(el, rootPath = []) {
+        const modelName = Ballpen.wrapAbsPath(rootPath, el.getAttribute('bp-show')); 
 
         Ballpen.ignoreInnerDirectives(modelName, [], (el) => {
             const model = Ballpen.parseData(modelName, this.dataList);
@@ -281,8 +287,8 @@ class Ballpen {
         }, el);
     };
 
-    bindModel(el) {
-        const modelName = el.getAttribute('bp-model');
+    bindModel(el, rootPath = []) {
+        const modelName = Ballpen.wrapAbsPath(rootPath, el.getAttribute('bp-model'));
 
         Ballpen.ignoreInnerDirectives(modelName, [/^@{([\d]+)}$/ig], (el) => {
             // Handel 'for' list index
@@ -302,8 +308,12 @@ class Ballpen {
         }, el);
     };
 
-    bindClass(el) {
-        const modelName = el.getAttribute('bp-class');
+    bindMoustache(el) {
+
+    };
+
+    bindClass(el, rootPath = []) {
+        const modelName = Ballpen.wrapAbsPath(rootPath, el.getAttribute('bp-class'));
 
         Ballpen.ignoreInnerDirectives(modelName, [], (el) => {
             const model = Ballpen.parseData(modelName, this.dataList);
@@ -313,6 +323,7 @@ class Ballpen {
             }
 
             this.register(this.dataList, this.dataListPure, model.path, (yetVal, nowVal) => {
+                el.classList.remove(yetVal);
                 if (!el.classList.contains(nowVal)) {
                     el.classList.add(nowVal);
                 }
@@ -332,9 +343,10 @@ class Ballpen {
         }, el, _fnName, _fnType, context, args);
     };
 
-    bindBind(el, _bindValue, _bindKey) {
+    bindBind(el, _bindValue, _bindKey, rootPath = []) {
         Ballpen.ignoreInnerDirectives(_bindValue, [], (el, _bindValue, _bindKey) => {
-            const model = Ballpen.parseData(_bindValue, this.dataList);
+            const modelName = Ballpen.wrapAbsPath(rootPath, _bindValue);
+            const model = Ballpen.parseData(modelName, this.dataList);
 
             // Set customized attribute
             el.setAttribute(_bindKey, model.data);
@@ -346,33 +358,64 @@ class Ballpen {
         }, el, _bindValue, _bindKey);
     };
 
-    bindFor(el) {
-        const modelName = el.getAttribute('bp-for');
-        const model = Ballpen.parseData(modelName, this.dataList);
-
+    bindFor(el, scope = {}, indexStack = {}) {
+        console.trace(scope);
+        const modelPaths = el.getAttribute('bp-for').split(/\s+in\s+/);
+        const _pScope = modelPaths[1];
+        const _cScope = modelPaths[0];
+        
+        // Update scope array
+        if (/\./ig.test(_pScope)) {
+            const _t = _pScope.split('.');
+            scope[_pScope] = scope[_t[0]] + '.' + _t[1];
+        } else {
+            scope[_pScope] = _pScope;
+        }
+        console.log(scope);
+        console.log(_pScope);
+        console.trace(scope[_pScope]);
+        const model = Ballpen.parseData(scope[_pScope], this.dataList);
+        
         let parentNode = el.parentNode;
+        console.log(parentNode);
         let virtualDiv = document.createDocumentFragment();
 
         for (let i = 0; i < model.data.length; i++) {
-            let div = el.cloneNode(true);
-            let _dataPath = `${modelName}.${i}`;
+            let _div = el.cloneNode(true);
+            let _dataPath = `${scope[_pScope]}.${i}`;
 
-            div.removeAttribute('bp-for');
+            // Update current scope chain
+            scope[_cScope] = _dataPath;
 
-            virtualDiv.appendChild(this.bindForItems(div, _dataPath, i));
+            // Update current index chain
+            indexStack[_cScope] = i;
+
+            _div.removeAttribute('bp-for');
+
+            this.bindForItemsRecursion(_div, scope, indexStack, _dataPath, i, true, (el) => {
+                virtualDiv.appendChild(el);
+            });
         }
 
         parentNode.appendChild(virtualDiv);
-
+        console.log(indexStack);
         // Set register
         this.register(this.dataList, this.dataListPure, model.path, (yetVal, nowVal) => {
             let virtualDiv = document.createDocumentFragment();
 
             for (let i = 0; i < nowVal.length; i++) {
-                let div = el.cloneNode(true);
-                let _dataPath = `${modelName}.${i}`;
+                let _div = el.cloneNode(true);
+                let _dataPath = `${scope[_pScope]}.${i}`;
 
-                virtualDiv.appendChild(this.bindForItems(div, _dataPath, i));
+                // Update current scope chain
+                scope[_cScope] = _dataPath;
+
+                // Update current index chain
+                indexStack[_cScope] = i;
+
+                this.bindForItemsRecursion(_div, scope, indexStack, _dataPath, i, true, (el) => {
+                    virtualDiv.appendChild(el);
+                });
             }
 
             while (parentNode.firstChild) {
@@ -385,43 +428,31 @@ class Ballpen {
         this.removedChildNodes.push(el);
     };
 
-    bindForItemsRecursion(el, data, itemIndex) {
+    bindForItemsRecursion(el, scope, indexStack, data, itemIndex, isInit = false, fn = false) {
         let child = !!Ballpen.isHTMLCollection(el);
 
         for (let j = 0; j < (child ? el.length : 1); j++) {
             const _thisNode = (child ? el[j] : el);
 
             if (!_thisNode.hasAttributes() && child) {
+                if (_thisNode.children.length > 0) {
+                    this.bindForItemsRecursion(_thisNode.children, scope, indexStack, data, itemIndex);
+                }
                 continue;
             }
 
             // Bind normal render tag
             let _attrsMain = _thisNode.attributes;
-            
+            let _attrsArr = [];
+
             for (let i = 0; i < _attrsMain.length; i++) {
-                const _attr = _attrsMain.item(i);
+                let _i = _attrsMain.item(i);
+                _attrsArr.push(_i.name);
 
-                if (_attr.name === 'bp-class') {
-                    let _thisSubModel = _thisNode.getAttribute('bp-class');
-                    let _thisSubModelAbs = _thisSubModel;
-
-                    if (/^@\./ig.test(_thisSubModel)) {
-                        let _subModel = _thisSubModel.split('.')[1];
-                        _thisSubModelAbs = data + `.${_subModel}`;
-                    } else if (/^@$/ig.test(_thisSubModel)) {
-                        _thisSubModelAbs = data;
-                    } 
-
-                    if (_thisSubModelAbs !== _thisSubModel) {
-                        _thisNode.setAttribute('bp-class', _thisSubModelAbs);
-                    }
-
-                    this.bindClass(_thisNode);
-                }
-
-                if (/bp-event:/ig.test(_attr.name)) {
-                    let _fnType = _attr.name.split(':')[1];
-                    let _fnName = _attr.value;
+                // Bind event
+                if (/bp-event:/ig.test(_i.name)) {
+                    let _fnType = _i.name.split(':')[1];
+                    let _fnName = _i.value;
 
                     if (/^@:/ig.test(_fnName)) {
                         this.bindEvent(_thisNode, _fnName.split(':')[1], _fnType, this.dataList, {
@@ -429,57 +460,75 @@ class Ballpen {
                         });
                     }
                 }
+            }
 
-                if (_attr.name === 'bp-model') {
-                    let _thisSubModel = _thisNode.getAttribute('bp-model');
-                    let _thisSubModelAbs = _thisSubModel;
+            // Render 'for' list in another 'for' list
+            if (_attrsArr.includes('bp-for')) {
+                console.log(111);
+                this.bindFor(_thisNode, scope, indexStack);
+                continue;
+            }
 
-                    if (/^@\./ig.test(_thisSubModel)) {
-                        let _subModel = _thisSubModel.split('.')[1];
-                        _thisSubModelAbs = data + `.${_subModel}`;
-                    } else if (/^@$/ig.test(_thisSubModel)) {
-                        _thisSubModelAbs = data;
-                    } else if (/^@{index}$/ig.test(_thisSubModel)) {
-                        _thisSubModelAbs = `@{${itemIndex}}`;
-                    }
+            if (_attrsArr.includes('bp-class')) {
+                let _thisSubModel = _thisNode.getAttribute('bp-class');  
+                let _thisSubModelAbs = _thisSubModel;
 
-                    if (_thisSubModelAbs !== _thisSubModel) {
-                        _thisNode.setAttribute('bp-model', _thisSubModelAbs);
-                    }
-
-                    this.bindModel(_thisNode);
+                if (/^@/ig.test(_thisSubModel)) {
+                    _thisSubModelAbs = _thisSubModel.replace(/^@[a-z0-9A-Z_]*/, scope[_thisSubModel.split('.')[0]]);
                 }
 
-                if (_attr.name === 'bp-show') {
-                    let _thisSubModel = _thisNode.getAttribute('bp-show');
-                    let _thisSubModelAbs = _thisSubModel;
-
-                    if (/^@\./ig.test(_thisSubModel)) {
-                        let _subModel = _thisSubModel.split('.')[1];
-                        _thisSubModelAbs = data + `.${_subModel}`;
-                    } else if (/^@$/ig.test(_thisSubModel)) {
-                        _thisSubModelAbs = data;
-                    } 
-
-                    if (_thisSubModelAbs !== _thisSubModel) {
-                        _thisNode.setAttribute('bp-show', _thisSubModelAbs);
-                    }
-
-                    this.bindShow(_thisNode);
+                if (_thisSubModelAbs !== _thisSubModel) {
+                    _thisNode.setAttribute('bp-class', _thisSubModelAbs);
                 }
 
-                // Render 'for' list in another 'for' had not been implemented yet
+                this.bindClass(_thisNode);
+            }
+
+            if (_attrsArr.includes('bp-model')) {
+                let _thisSubModel = _thisNode.getAttribute('bp-model');
+                let _thisSubModelAbs = _thisSubModel;
+
+                if (/^@/ig.test(_thisSubModel)) {
+                    // Get index
+                    if (/\[\[index\]\]/ig.test(_thisSubModel)) {
+                        console.log(_thisSubModel);
+                        _thisSubModelAbs = `@{${indexStack[_thisSubModel.match(/^(.*)\[\[index\]\]$/)[1]]}}`;
+
+                    } else {
+                        _thisSubModelAbs = _thisSubModel.replace(/^@[a-z0-9A-Z_]*/, scope[_thisSubModel.split('.')[0]]);  
+                    }
+                }
+
+                if (_thisSubModelAbs !== _thisSubModel) {
+                    _thisNode.setAttribute('bp-model', _thisSubModelAbs);
+                }
+
+                this.bindModel(_thisNode);
+            }
+
+            if (_attrsArr.includes('bp-show')) {
+                let _thisSubModel = _thisNode.getAttribute('bp-show');
+                let _thisSubModelAbs = _thisSubModel;
+
+                if (/^@/ig.test(_thisSubModel)) {
+                    _thisSubModelAbs = _thisSubModel.replace(/^@[a-z0-9A-Z_]*/, scope[_thisSubModel.split('.')[0]]);
+                }
+
+                if (_thisSubModelAbs !== _thisSubModel) {
+                    _thisNode.setAttribute('bp-show', _thisSubModelAbs);
+                }
+
+                this.bindShow(_thisNode);
             }
 
             if (_thisNode.children.length > 0) {
-                this.bindForItemsRecursion(_thisNode.children, data, itemIndex);
+                this.bindForItemsRecursion(_thisNode.children, scope, indexStack, data, itemIndex);
             }
         }
-    };
 
-    bindForItems(el, data, itemIndex) {
-        this.bindForItemsRecursion(el, data, itemIndex);
-        return el;
+        if (isInit) {
+            fn && fn.call(this, el);
+        }
     };
 
     observePath(obj, rootPath, paths, fns) {

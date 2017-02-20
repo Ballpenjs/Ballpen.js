@@ -1,6 +1,6 @@
 {
   "name": "ballpen.js",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A tiny, lightweight mvvm framework ready for building flexible web apps.",
   "main": "dist/ballpen.min.js",
   "scripts": {
