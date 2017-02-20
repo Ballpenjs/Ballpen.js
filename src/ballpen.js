@@ -48,6 +48,8 @@ class Ballpen {
     };
 
     setProxy(dataList, path, fnSet = false, fnGet = false) {
+        let _oldVal = Ballpen.parseData(path, this.$dataListPure).data;
+
         let handler = {
             get: (target, property) => {
                 // Run callback
@@ -599,7 +601,7 @@ class Ballpen {
                     // Get index
                     if (/\[\[index\]\]/ig.test(_thisSubModel)) {
                         _thisSubModelAbs = '@{' + `${indexStack[_thisSubModel.match(/^(.*)\[\[index\]\]$/)[1]]}` + '}';
-                    } else if(/@{\d+}/ig.test(_thisSubModel)) {
+                    } else if (/@{\d+}/ig.test(_thisSubModel)) {
                         _thisSubModelAbs = _thisSubModel;
                     } else {
                         _thisSubModelAbs = _thisSubModel.replace(/^@[a-z0-9A-Z_]*/, scope[_thisSubModel.split('.')[0]]);  
