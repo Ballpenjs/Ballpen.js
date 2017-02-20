@@ -1,4 +1,4 @@
-<p align="center"><a href="#" target="_blank"><img width="400px" src="https://www.yhspy.com/view/github/ballpen.js/art.png?v=v0.1.2-alpha"></a></p>
+<p align="center"><a href="#" target="_blank"><img width="300px" src="https://www.yhspy.com/view/github/ballpen.js/art.png?v=v0.1.3-alpha"></a></p>
 
 <p align="center">
   <a href="https://circleci.com/gh/Becavalier/Ballpen.js/tree/master"><img src="https://img.shields.io/circleci/project/Becavalier/Ballpen.js/master.svg" alt="Build Status"></a>
@@ -22,8 +22,9 @@ npm install ballpen.js --save
 ```html
 <!-- html -->
 <div id="app">
-  <h1 bp-model="header.title" bp-show="header.showTitle"></h1>
-  <button bp-model="header.buttonTxt" bp-event:click="foldTitle"></button>
+  <h1 bp-show="header.showTitle">{{ header.title }}</h1>
+  <input type="text" bp-model="header.title" bp-event:input="syncTitle"></input>
+  <button bp-event:click="foldTitle">{{ header.buttonTxt }}</button>
 </div>
 ```
 
@@ -42,13 +43,16 @@ new Ballpen("#app", {
     event: {
         foldTitle: (el, context, args) => {
             context.header.showTitle = !context.header.showTitle;
+        },
+        syncTitle: (el, context, args) => {
+            context.title = el.value;
         }
     },
     watchers: {
         "header": {
-            handler: (newContextData, context) => {
-                if (!newContextData.showTitle) {
-                    context.$buttonTxt = '- Show -';
+            handler: (getter, setter) => {
+                if (!getter.showTitle) {
+                    setter.$buttonTxt = '- Show -';
                 }
             }
         }
@@ -58,6 +62,7 @@ new Ballpen("#app", {
 
 ## Document
 
+Coming soon.
 
 ## License
 

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ballpen.js Directive - 'bp-class'</title>
+    <style type="text/css">
+      .s-name {
+        color: red;
+      }
+      .s-version {
+        color: green;
+      }
+    </style>
+</head>
+<body>
+
+<div id="app">
+  <h1>Ballpen.js Directive - 'bp-class'</h1>
+
+  <p bp-class="class.name">{{ name }}</p>
+  <p bp-class="class.version">{{ version }}</p>
+</div> 
+
+<script src="../dist/ballpen.min.js"></script>
+<script type="text/javascript">
+
+    let data = {
+        name: "Ballpen.js",
+        version: "1.0",
+        class: {
+          name: 's-name',
+          version: 's-version'
+        }
+    };
+
+    new Ballpen("#app", {
+        data: data
+    });
+
+</script>
+</body>
+</html> 
+

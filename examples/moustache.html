@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ballpen.js - 'Moustache' template</title>
+</head>
+<body>
+
+<div id="app">
+  <h1>Ballpen.js - 'Moustache' template</h1>
+
+  <p>This is {{ name }}, welcome to use! (<span>v{{ version }}</span>)</p>
+</div> 
+
+<script src="../dist/ballpen.min.js"></script>
+<script type="text/javascript">
+
+    let data = {
+        name: "Ballpen.js",
+        version: "1.0"
+    };
+
+    new Ballpen("#app", {
+        data: data
+    });
+
+</script>
+</body>
+</html> 
+

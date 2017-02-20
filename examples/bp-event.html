@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ballpen.js Directive - 'bp-bind'</title>
+</head>
+<body>
+
+<div id="app">
+  <h1>Ballpen.js Directive - 'bp-bind'</h1>
+
+  <p bp-show="show">{{ name }}</p>
+  <input type="text" bp-model="name" bp-event:input="syncName"></input>
+  <button bp-event:click="foldName">Toggle</button>
+</div> 
+
+<script src="../dist/ballpen.min.js"></script>
+<script type="text/javascript">
+
+    let data = {
+        name: "Ballpen.js",
+        show: true
+    };
+
+    new Ballpen("#app", {
+        data: data,
+        events: {
+          foldName: (el, context, args) => {
+            context.show = !context.show;
+          },
+          syncName: (el, context, args) => {
+            context.name = el.value;
+          }
+        }
+    });
+
+</script>
+</body>
+</html> 
+

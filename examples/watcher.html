@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ballpen.js - 'Watcher' template</title>
+</head>
+<body>
+
+<div id="app">
+  <h1>Ballpen.js - 'Watcher' template</h1>
+
+  <p>{{ infoList.name }}</p>
+  <input type="text" bp-model="infoList.name" bp-event:input="syncName"></input>
+  <p>{{ infoList.modified }}</p>
+</div> 
+
+<script src="../dist/ballpen.min.js"></script>
+<script type="text/javascript">
+
+    let data = {
+        infoList: {
+            name: "Ballpen.js",
+            modified: true
+        }
+    };
+
+    new Ballpen("#app", {
+        data: data,
+        events: {
+            syncName: (el, context, args) => {
+                context.infoList.name = el.value;
+            }
+        },
+        watchers: {
+            //!! Watchers must be set on an object or array for now !!
+            "infoList": {
+                handler: (getter, setter) => {
+                    // Use 'getter' when reading an attribute's value, use 'setter' when changing an attribute's value
+                    if (getter.name !== "Ballpen.js") {
+                        // If you add a '$' symbol before an attribute, the change on this attribute will be ignored by watchers
+                        setter.$modified = false;
+                    } else {
+                        setter.$modified = true;
+                    }
+                }
+            }
+        }
+    });
+
+</script>
+</body>
+</html> 
+

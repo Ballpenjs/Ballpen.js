@@ -7,14 +7,7 @@
 
 <div id="app">
   <h1>Ballpen.js Directive - 'bp-for'</h1>
-<!--   <ul>
-    <li bp-for="@list in lists" bp-show="@list.show">
-        <h2 bp-model="@list[[index]]" bp-class="@list.class"></h2>
-        <p bp-model="@list.title"></p>
-        
-    </li>
-  </ul> -->
-
+  <h3>With 'bp-model'</h3>
   <ul>
     <li bp-for="@list in lists">
         <h2 bp-model="@list[[index]]"></h2>
@@ -24,24 +17,31 @@
                 <h2 bp-model="@innerList[[index]]"></h2>
                 <p bp-model="@innerList.title"></p>
                 <p bp-model="@list.title"></p>
+                <!-- Data from global context-->
+                <p bp-model="name" bp-bind:title="@innerList.title"></p>
             </li>
+            <span>{{ name }}</span>
         </ul>
     </li>
+    <span>{{ name }}</span>
   </ul>
-<!-- 
+  <br/><br/>
+  <h3>With 'moustache'</h3>
   <ul>
     <li bp-for="@list in lists">
-        <h2>{{ @list[[index]] }}</h2>
-        <p>{{ @list.title }}</p>
+        <h2>Index: {{ @list[[index]] }}</h2>
+        <p>Title: {{ @list.title }}</p>
         <ul>
             <li bp-for="@innerList in @list.inner">
-                <h2>{{ @innerList[[index]] }}</h2>
-                <p>{{ @innerList.title }}</p>
-                <p>{{ @list.title }}</p>
+                <h2>Inner Index: {{ @innerList[[index]] }}</h2>
+                <p>Inner Title: {{ @innerList.title }}</p>
+                <p>Title: {{ @list.title }}</p>
             </li>
+            <span>{{ name }}</span>
         </ul>
     </li>
-  </ul> -->
+    <span>{{ name }}</span>
+  </ul>
 </div> 
 
 <script src="../dist/ballpen.min.js"></script>
@@ -59,8 +59,7 @@
                         title: "Inner2 - Health"
                     }
                 ],
-                class: "health",
-                show: true
+                class: "health"
             },
             {
                 title: "Body",
@@ -72,8 +71,7 @@
                         title: "Inner2 - Body"
                     }
                 ],
-                class: "body",
-                show: true
+                class: "body"
             },
             {
                 title: "Emotion",
@@ -85,10 +83,10 @@
                         title: "Inner2 - Emotion"
                     }
                 ],
-                class: "emotion",
-                show: true
+                class: "emotion"
             }
-        ]
+        ],
+        name: "Ballpen.js"
     };
 
     window.a = new Ballpen("#app", {

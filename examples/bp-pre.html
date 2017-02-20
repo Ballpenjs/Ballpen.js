@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ballpen.js Directive - 'bp-pre'</title>
+</head>
+<body>
+
+<div id="app" bp-shade>
+  <h1>Ballpen.js Directive - 'bp-pre'</h1>
+
+  <p bp-pre>{{ name }}</p>
+  <p>{{ version }}</p>
+</div> 
+
+<script src="../dist/ballpen.min.js"></script>
+<script type="text/javascript">
+
+    let data = {
+        name: "Ballpen.js",
+        version: "1.0"
+    };
+
+    new Ballpen("#app", {
+        data: data
+    });
+
+</script>
+</body>
+</html> 
+
