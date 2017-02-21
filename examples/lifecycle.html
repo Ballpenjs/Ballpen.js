@@ -34,6 +34,7 @@
                 context.ajaxDataStr = "- This is a string from an ajax call! -"; 
 
                 setTimeout(() => {
+                    // Ballpen.js will start rendering after return a 'resolve()'
                     return resolve();
                 }, 1000);
             },

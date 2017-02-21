@@ -97,7 +97,7 @@ new Ballpen("#app", {
 
 * **bp-pre**
 
-> 'bp-pre' is used for prevent distict DOM element from being rendered by ballpen.js.
+> 'bp-pre' is used for preventing distict DOM element from being rendered by ballpen.js.
 
 > e.g: [examples/bp-pre.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/bp-pre.html)
 
@@ -113,6 +113,12 @@ new Ballpen("#app", {
 > 'bp-show' is used for hiding or displaying elements according to distinct data's value.
 
 > e.g: [examples/bp-show.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/bp-show.html)
+
+* **bp-ref**
+
+> 'bp-ref' is used for storing DOM elements into a global object `Ballpen.$refs`, you can get native DOM element directly from this global object which you had binded an 'bp-ref' on it before.
+
+> e.g: [examples/bp-ref.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/bp-ref.html)
 
 
 ## Core Features

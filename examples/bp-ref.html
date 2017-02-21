@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ballpen.js Directive - 'bp-ref'</title>
+</head>
+<body>
+
+<div id="app">
+  <h1>Ballpen.js Directive - 'bp-ref'</h1>
+
+  <p bp-ref="name">{{ name }}</p>
+  <p bp-ref="version">{{ version }}</p>
+  <button bp-event:click="click">Click Me!</button>
+  <ul>
+    <li bp-for="@list in lists">
+      <p bp-ref="list.item">{{ @list.item }}</p>
+    </li>
+  </ul>
+</div> 
+
+<script src="../dist/ballpen.min.js"></script>
+<script type="text/javascript">
+
+    let data = {
+        name: "Ballpen.js",
+        version: "1.0",
+        lists: [
+          {
+            item: "item - one"
+          },
+          {
+            item: "item - two"
+          }
+        ]
+    };
+
+    new Ballpen("#app", {
+        data: data,
+        events: {
+          click: (el, context, args) => {
+            Ballpen.$refs['list.item'].forEach((_item) => {
+              _item.style.color = "red";
+            });
+          }
+        }
+    });
+
+</script>
+</body>
+</html> 
+

@@ -16,13 +16,13 @@ class Ballpen {
     lifecycleHookPoint(type, dataModel, fn = null) {
         let rawData = dataModel.data;
 
-        if (type === 'beforeRender' && dataModel.lifecycle.beforeRender) {
+        if (type === 'beforeRender' && dataModel.lifecycle && dataModel.lifecycle.beforeRender) {
             new Promise((resolve, reject) => {
                 return dataModel.lifecycle.beforeRender.call(this, resolve, reject, rawData);
             }).then(() => {
                 fn && fn.call(this, dataModel);
             }).catch((err) => {});
-        } else if (type === 'afterRender' && dataModel.lifecycle.afterRender) {
+        } else if (type === 'afterRender' && dataModel.lifecycle && dataModel.lifecycle.afterRender) {
             dataModel.lifecycle.afterRender.call(this, rawData);
         } else {
             fn && fn.call(this, dataModel);
@@ -31,6 +31,9 @@ class Ballpen {
 
     init(el, dataModel) {
         this.$el = document.querySelector(el);
+
+        // Set $refs, an global set
+        Ballpen.$refs = {};
 
         // Handle invalid root element
         if (!this.$el) {
@@ -242,6 +245,10 @@ class Ballpen {
                 if (_attrsArr.includes('bp-show')) {
                     this.bindShow(_thisNode);
                 }
+
+                if (_attrsArr.includes('bp-ref')) {
+                    this.bindRef(_thisNode);
+                }
             }
 
             // Moustache binding
@@ -267,6 +274,19 @@ class Ballpen {
             // Lifecycle hook
             this.lifecycleHookPoint('afterRender', this.$dataModel);
         }   
+    };
+
+    bindRef(el) {
+        let key = el.getAttribute('bp-ref');
+
+        if (BallpenUtil.isArray(Ballpen.$refs[key])) {
+            Ballpen.$refs[key].push(el);
+        } else {
+            Ballpen.$refs[key] = [];
+            Ballpen.$refs[key].push(el);
+        }
+
+        el.removeAttribute('bp-ref');
     };
 
     bindShow(el, rootPath = []) {
@@ -608,6 +628,10 @@ class Ballpen {
             if (_attrsArr.includes('bp-for')) {
                 this.bindFor(_thisNode, scope, indexStack);
                 continue;
+            }
+
+            if (_attrsArr.includes('bp-ref')) {
+                this.bindRef(_thisNode);
             }
 
             if (_attrsArr.includes('bp-class')) {
