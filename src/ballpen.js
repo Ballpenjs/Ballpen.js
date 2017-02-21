@@ -3,10 +3,30 @@ import BallpenUtil from './ballpen-util.js';
 class Ballpen {
 
     constructor(el, dataModel) { 
-        // Init EventList
-        this.init(el, dataModel);
-        // Scan directives
-        this.scan(this.$el);
+        this.$dataModel = dataModel;
+
+        this.lifecycleHookPoint('beforeRender', this.$dataModel, () => {
+            // Init EventList
+            this.init(el, this.$dataModel);
+            // Scan directives
+            this.scan(this.$el);
+        });
+    };
+
+    lifecycleHookPoint(type, dataModel, fn = null) {
+        let rawData = dataModel.data;
+
+        if (type === 'beforeRender' && dataModel.lifecycle.beforeRender) {
+            new Promise((resolve, reject) => {
+                return dataModel.lifecycle.beforeRender.call(this, resolve, reject, rawData);
+            }).then(() => {
+                fn && fn.call(this, dataModel);
+            }).catch((err) => {});
+        } else if (type === 'afterRender' && dataModel.lifecycle.afterRender) {
+            dataModel.lifecycle.afterRender.call(this, rawData);
+        } else {
+            fn && fn.call(this, dataModel);
+        }
     };
 
     init(el, dataModel) {
@@ -243,6 +263,9 @@ class Ballpen {
             this.attach();
             // Show rendered view
             this.$el.removeAttribute('bp-shade');
+
+            // Lifecycle hook
+            this.lifecycleHookPoint('afterRender', this.$dataModel);
         }   
     };
 

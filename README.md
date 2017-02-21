@@ -129,6 +129,12 @@ new Ballpen("#app", {
 
 > e.g: [examples/watcher.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/watcher.html)
 
+* **Lifecycle Hook Point**
+
+> You can inject hook functions at every lifecycle hook points, it's include: "beforeRender", "afterRender".
+
+> e.g: [examples/lifecycle.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/lifecycle.html)
+
 ## Instance Properties
 
 * **.data**

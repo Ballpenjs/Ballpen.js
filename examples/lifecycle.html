@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ballpen.js - 'Lifecycle Hook Point'</title>
+    <style type="text/css">
+        [bp-shade] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" bp-shade>
+  <h1>Ballpen.js - 'Lifecycle Hook Point'</h1>
+
+  <p>This is {{ name }}, welcome to use! (<span>v{{ version }}</span>)</p>
+
+  <p>{{ ajaxDataStr }}</p>
+</div> 
+
+<script src="../dist/ballpen.min.js"></script>
+<script type="text/javascript">
+
+    let data = {
+        name: "Ballpen.js",
+        version: "1.0"
+    };
+
+    window.a = new Ballpen("#app", {
+        data: data,
+        lifecycle: {
+            beforeRender: (resolve, reject, context) => {
+                // The page will be rendered after 1 second, you can here 
+                context.ajaxDataStr = "- This is a string from an ajax call! -"; 
+
+                setTimeout(() => {
+                    return resolve();
+                }, 1000);
+            },
+            afterRender: (context) => {
+                console.log('- afterRender -');
+            }
+        }
+    });
+
+</script>
+</body>
+</html> 
+
