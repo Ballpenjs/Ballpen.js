@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Ballpen.js Directive - 'bp-bind'</title>
+    <title>Ballpen.js Directive - 'bp-event'</title>
 </head>
 <body>
 
 <div id="app">
-  <h1>Ballpen.js Directive - 'bp-bind'</h1>
+  <h1>Ballpen.js Directive - 'bp-event'</h1>
 
   <p bp-show="show">{{ name }}</p>
   <input type="text" bp-model="name" bp-event:input="syncName"></input>
   <button bp-event:click="foldName">Toggle</button>
+  <br/><br/>
+  <!-- Bind multiple events with an object like style -->
+  <button bp-event="{mouseover:mouseoverEvent, dblclick:dblclickEvent}">Multi-Event</button>
 </div> 
 
 <script src="../dist/ballpen.min.js"></script>
@@ -29,6 +32,12 @@
           },
           syncName: (el, context, args) => {
             context.name = el.value;
+          },
+          mouseoverEvent: (el, context, args) => {
+            console.log('Mouse Over!');
+          },
+          dblclickEvent: (el, context, args) => {
+            console.log("Double Click!");
           }
         }
     });

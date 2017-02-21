@@ -123,11 +123,19 @@ new Ballpen("#app", {
 
 > e.g: [examples/moustache.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/moustache.html)
 
-* **Watcher**
+* **Data Watcher**
 
 > You can use 'Watcher' to watch your data flow's changes, according to the changes, you can do everything what you want. ****Please take care that you can just set a watcher on an object or an array, not on any single normal data.****
 
 > e.g: [examples/watcher.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/watcher.html)
+
+## Instance Properties
+
+* **.data**
+
+> You can access the 'data' attribute from an constructed instance object. According to this attribute, you can get all the constructing data of the current status.
+
+> e.g: [examples/instance-data.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/instance-data.html)
 
 
 

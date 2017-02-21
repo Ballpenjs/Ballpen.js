@@ -10,6 +10,9 @@
 
   <p bp-bind:name="attrs.name">{{ name }}</p>
   <p bp-bind:data-version="attrs.version">{{ version }}</p>
+  <br/>
+  <!-- Bind multiple attributes with an object like style -->
+  <p bp-bind="{data-version:attrs.version, name:attrs.name}">Multi-Bind</p>
 </div> 
 
 <script src="../dist/ballpen.min.js"></script>
@@ -19,8 +22,8 @@
         name: "Ballpen.js",
         version: "1.0",
         attrs: {
-          name: 'ballpen.js',
-          version: '1.0'
+          name: 'attr.ballpen.js',
+          version: 'attr.1.0'
         }
     };
 

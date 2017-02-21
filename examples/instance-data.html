@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ballpen.js - 'Instance Properties' - data</title>
+</head>
+<body>
+
+<div id="app">
+  <h1>Ballpen.js - 'Instance Properties' - data</h1>
+</div> 
+
+<script src="../dist/ballpen.min.js"></script>
+<script type="text/javascript">
+
+    let data = {
+        name: "Ballpen.js",
+        version: "1.0"
+    };
+
+    let ballpen = new Ballpen("#app", {
+        data: data
+    });
+
+    // Access all the constructing data of the current status
+    console.log(ballpen.data);
+
+</script>
+</body>
+</html> 
+
