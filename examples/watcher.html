@@ -19,11 +19,12 @@
     let data = {
         infoList: {
             name: "Ballpen.js",
-            modified: true
+            modified: true,
+            lists: [1, 2, 3]
         }
     };
 
-    new Ballpen("#app", {
+    window.a = new Ballpen("#app", {
         data: data,
         events: {
             syncName: (el, context, args) => {
@@ -37,9 +38,9 @@
                     // Use 'getter' when reading an attribute's value, use 'setter' when changing an attribute's value
                     if (getter.name !== "Ballpen.js") {
                         // If you add a '$' symbol before an attribute, the change on this attribute will be ignored by watchers
-                        setter.$modified = false;
+                        setter.modified = false;
                     } else {
-                        setter.$modified = true;
+                        setter.modified = true;
                     }
                 }
             }

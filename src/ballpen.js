@@ -27,19 +27,27 @@ class Ballpen {
         }
 
         if (dataModel.watchers) {
-            this.watchersHook = new Map();
+            // Find every reference node in datalist
+            this.watchersHook = Ballpen.findReferenceNode(this.$dataList);
 
             let _watchers = dataModel.watchers;
 
-            for (let watcher in _watchers) {
-                const _dataPath = watcher;
-                const _dataHook = _watchers[watcher].handler;
+            for (let _watcher in _watchers) {
+                const _watcherEntity = {
+                    root: _watcher,
+                    handler: _watchers[_watcher].handler
+                };
 
-                this.watchersHook.set(_dataPath, _dataHook);
+                this.watchersHook.forEach((watcherQueue, path) => {
+                    if (new RegExp("^" + _watcher, "ig").test(path)) {
+                        watcherQueue.push(_watcherEntity);
+                    }
+                });
             }
 
-            this.watchersHook.forEach((watcherFn, path) => {
-                Ballpen.renderObjectValueByPath(this.$dataList, path, this.setProxy(Ballpen.parseData(path, this.$dataList).data, path, watcherFn, watcherFn));
+            // Mount watchers
+            this.watchersHook.forEach((watcherQueue, path) => {
+                Ballpen.renderObjectValueByPath(this.$dataList, path, this.setProxy(path, watcherQueue));
             });
         }
 
@@ -47,29 +55,37 @@ class Ballpen {
         this.$registers = [];
     };
 
-    setProxy(dataList, path, fnSet = false, fnGet = false) {
+    setProxy(path, watcherQueue) {
+        let _dist = Ballpen.parseData(path, this.$dataList).data;
+
         let _oldVal = Ballpen.parseData(path, this.$dataListPure).data;
 
         let handler = {
-            get: (target, property) => {
+            get: (_target, _property) => {
                 // Run callback
-                fnGet && fnGet.call(this, Ballpen.parseData(path, this.$dataListPure).data, Ballpen.parseData(path, this.$dataList).data);
-                return target[property];
+                watcherQueue.forEach((entity) => {
+                    let _fn = entity.handler;
+                    let _path = entity.root;
+
+                    _fn && _fn.call(this, Ballpen.parseData(_path, this.$dataListPure).data, Ballpen.parseData(_path, this.$dataList).data);
+                });
+                
+                return _target[_property];
             },
-            set: (target, property, value, receiver) => {
-                let realProperty;
-                if (/^\$/ig.test(property)) {
-                    realProperty = property.substring(1);
-                } else {
-                    realProperty = property;
+            set: (_target, _property, _value, receiver) => {
+                // Run callback
+                if (_value !== _oldVal[_property]) {
+                    _oldVal[_property] = _value;
+                    _target[_property] = _value;
+
+                    watcherQueue.forEach((entity) => {
+                        let _fn = entity.handler;
+                        let _path = entity.root;
+
+                        _fn && _fn.call(this, Ballpen.parseData(_path, this.$dataListPure).data, Ballpen.parseData(_path, this.$dataList).data);
+                    });
                 }
 
-                target[realProperty] = value;
-                // Run callback
-                if (realProperty === property) {
-                    fnSet && fnSet.call(this, Ballpen.parseData(path, this.$dataListPure).data, Ballpen.parseData(path, this.$dataList).data);
-                }
-                
                 // Return true to accept the changes
                 return true;
             },
@@ -79,7 +95,7 @@ class Ballpen {
         };
 
         // Can not set a proxy on a single value (!! need to be fixed !!)
-        return new Proxy(dataList, handler);
+        return new Proxy(_dist, handler);
     };
 
     initEventList(eventList) {
@@ -162,6 +178,34 @@ class Ballpen {
             this.$el.removeAttribute('bp-shade');
         }   
     };
+
+    static findReferenceNode(obj, map = new Map(), root = '') {
+        let _root = root;
+
+        if (Ballpen.isObject(obj)) {
+            for (let _i in obj) {
+                if (Ballpen.isObject(obj[_i]) || Ballpen.isArray(obj[_i])) {
+                    _root += `${_i}.`;
+
+                    map.set(_root.slice(0, -1), []);
+
+                    Ballpen.findReferenceNode(obj[_i], map, _root);
+                }
+            }
+        } else if (Ballpen.isArray(obj)) {
+            obj.forEach((_i, _index) => {
+                if (Ballpen.isObject(_i) || Ballpen.isArray(_i)) {
+                    _root += `${_index}.`;
+
+                    map.set(_root.slice(0, -1), []);
+
+                    Ballpen.findReferenceNode(_i, map, _root);
+                }
+            });
+        }
+
+        return map;
+    }
 
     static isHTMLCollection(obj) {
         return Object.prototype.toString.call(obj) === '[object HTMLCollection]';
