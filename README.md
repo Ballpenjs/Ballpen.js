@@ -8,7 +8,7 @@
 </p>
 
 ## Description
-**Ballpen.js** is a tiny, lightweight mvvm framework ready for building flexible web apps. It's very easy to use, and you can get it into your work only after a few minutes's quick learning.
+**Ballpen.js** is a lightweight, plugin based mvvm framework ready for building flexible web apps. It's very easy to use, and you can get it into your work only after a few minutes's quick learning.
 
 ## Installation
 
@@ -127,19 +127,19 @@ new Ballpen("#app", {
 
 > You can use 'Moustache Template' to bind data to DOM elements flexibly, with a data path inside this symbol `{{}}`, ballpen.js will automatically rendering 'Moustache Template' with corresponding data, and make it a 'Two-Way Data Binding'. 
 
-> e.g: [examples/moustache.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/moustache.html)
+> e.g: [examples/core-moustache.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/core-moustache.html)
 
 * **Data Watcher**
 
 > You can use 'Watcher' to watch your data flow's changes, according to the changes, you can do everything what you want. ****Please take care that you can just set a watcher on an object or an array, not on any single normal data.****
 
-> e.g: [examples/watcher.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/watcher.html)
+> e.g: [examples/core-watcher.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/core-watcher.html)
 
 * **Lifecycle Hook Point**
 
 > You can inject hook functions at every lifecycle hook points, it's include: "beforeRender", "afterRender".
 
-> e.g: [examples/lifecycle.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/lifecycle.html)
+> e.g: [examples/core-lifecycle.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/core-lifecycle.html)
 
 ## Instance Properties
 

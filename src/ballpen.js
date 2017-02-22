@@ -1,9 +1,13 @@
 import BallpenUtil from './ballpen-util.js';
+import BallpenGlobalWrapper from './ballpen-global-wrapper.js';
 
 class Ballpen {
 
     constructor(el, dataModel) { 
         this.$dataModel = dataModel;
+
+        // Set $refs, $http, etc those global sets before initializaiton
+        BallpenGlobalWrapper.set(Ballpen);
 
         this.lifecycleHookPoint('beforeRender', this.$dataModel, () => {
             // Init EventList
@@ -31,9 +35,6 @@ class Ballpen {
 
     init(el, dataModel) {
         this.$el = document.querySelector(el);
-
-        // Set $refs, an global set
-        Ballpen.$refs = {};
 
         // Handle invalid root element
         if (!this.$el) {

@@ -1,7 +1,7 @@
 {
   "name": "ballpen.js",
   "version": "0.1.4",
-  "description": "A tiny, lightweight mvvm framework ready for building flexible web apps.",
+  "description": "A lightweight, plugin based mvvm framework ready for building flexible web apps.",
   "main": "dist/ballpen.min.js",
   "scripts": {
     "dev": "rollup -c -w",
@@ -12,7 +12,14 @@
     "url": "git+https://github.com/Becavalier/Ballpen.js.git"
   },
   "keywords": [
-    "mvvm", "framework", "ballpen", "es6", "Two-way binding", "tiny", "lightweight"
+    "mvvm",
+    "framework",
+    "ballpen",
+    "es6",
+    "Two-way binding",
+    "tiny",
+    "lightweight",
+    "plugin"
   ],
   "author": "YHSPY",
   "license": "MIT",
@@ -46,6 +53,7 @@
     "shelljs": "^0.7.6"
   },
   "dependencies": {
+    "axios": "^0.15.3",
     "babel-runtime": "^6.22.0"
   }
 }
