@@ -1,5 +1,6 @@
 import Axios from 'axios';
 import Underscore from 'underscore';
+import Velocity from 'velocity-animate';
 
 // Ballpen build-in plugins
 import Cookie from 'ballpen-plugin-cookie';
@@ -14,6 +15,7 @@ class BallpenGlobalWrapper {
         Ballpen.$util = Underscore;
         Ballpen.$cache = Cache;
         Ballpen.$cookie = Cookie;
+        Ballpen.$animate = Velocity;
 
         // Global variables
         Ballpen.$refs = {};

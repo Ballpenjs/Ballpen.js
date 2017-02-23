@@ -8,7 +8,7 @@
 </p>
 
 ## Description
-**Ballpen.js** is a lightweight, plugin based mvvm framework ready for building flexible web apps. It's very easy to use, and you can get it into your work only after a few minutes's quick learning.
+**Ballpen.js** is a lightweight, plugin based mvvm developing framework ready for building flexible web apps. It's very easy to use, and you can get it into your work only after a few minutes's quick learning.
 
 ## Installation
 
@@ -169,6 +169,13 @@ new Ballpen("#app", {
 > You can use `Ballpen.$utl` to access many utility methods, such as `isEmpty`, etc. Based on [underscore](https://github.com/jashkenas/underscore)
 
 > e.g: [examples/plugin-util.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/plugin-util.html)
+
+
+* **Ballpen.$animate**
+
+> You can use `Ballpen.$animate` to make animations on DOM elements as you wish. Based on [velocity](https://github.com/julianshapiro/velocity)
+
+> e.g: [examples/plugin-animate.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/plugin-animate.html)
 
 
 ## Instance Properties
