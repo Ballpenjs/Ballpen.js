@@ -1,6 +1,6 @@
 {
   "name": "ballpen.js",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A lightweight, plugin based mvvm framework ready for building flexible web apps.",
   "main": "dist/ballpen.min.js",
   "scripts": {
@@ -55,6 +55,8 @@
   "dependencies": {
     "axios": "^0.15.3",
     "babel-runtime": "^6.22.0",
+    "ballpen-plugin-cache": "^0.1.1",
+    "ballpen-plugin-cookie": "^0.1.0",
     "underscore": "^1.8.3"
   }
 }

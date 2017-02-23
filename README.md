@@ -141,6 +141,29 @@ new Ballpen("#app", {
 
 > e.g: [examples/core-lifecycle.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/core-lifecycle.html)
 
+## Plugin System
+
+### Build-in Plugins
+
+* **Ballpen.$http**
+
+> You can use `Ballpen.$http` to access ajax releatived operations. Based on [axios](https://github.com/mzabriskie/axios)
+
+> e.g: [examples/plugin-http.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/plugin-http.html)
+
+* **Ballpen.$cookie**
+
+> You can use `Ballpen.$cookie` to access cookie releatived operations. Based on [js-cookie](https://github.com/js-cookie/js-cookie)
+
+> e.g: [examples/instance-data.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/instance-data.html)
+
+* **Ballpen.$cache**
+
+> You can use `Ballpen.$cache` to access local cache releatived operations. Based on [localForage](https://github.com/localForage/localForage)
+
+> e.g: [examples/instance-data.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/instance-data.html)
+
+
 ## Instance Properties
 
 * **.data**
