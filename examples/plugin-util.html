@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Ballpen.js - 'Plugin - $cookie'</title>
+    <title>Ballpen.js - 'Plugin - $util'</title>
 </head>
 <body>
 
 <div id="app">
-  <h1>Ballpen.js - 'Plugin - $cookie'</h1>
+  <h1>Ballpen.js - 'Plugin - $util'</h1>
 
   <p>This is {{ name }}, welcome to use! (<span>v{{ version }}</span>)</p>
 </div> 
@@ -23,8 +23,9 @@
         data: data,
         lifecycle: {
             beforeRender: (resolve, reject, context) => {
-                // Use build-in plugin to operate cookie resource
-                Ballpen.$cookie.set("time", Math.round(new Date().getTime() / 1000));
+                let result = Ballpen.$util.isEmpty([]);
+
+                console.log(result);
 
                 return resolve();
             }

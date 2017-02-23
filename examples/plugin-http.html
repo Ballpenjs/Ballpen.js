@@ -30,7 +30,6 @@
         data: data,
         lifecycle: {
             beforeRender: (resolve, reject, context) => {
-                // The page will be rendered after 1 second, you can here 
                 Ballpen.$http.get('https://s.yhspy.com/test/weather', {
                     responseType: 'json'
                 }).then((res) => {

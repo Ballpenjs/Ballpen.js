@@ -164,6 +164,13 @@ new Ballpen("#app", {
 > e.g: [examples/instance-data.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/instance-data.html)
 
 
+* **Ballpen.$util**
+
+> You can use `Ballpen.$utl` to access many utility methods, such as `isEmpty`, etc. Based on [underscore](https://github.com/jashkenas/underscore)
+
+> e.g: [examples/plugin-util.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/plugin-util.html)
+
+
 ## Instance Properties
 
 * **.data**

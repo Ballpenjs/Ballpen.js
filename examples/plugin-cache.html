@@ -23,7 +23,7 @@
         data: data,
         lifecycle: {
             beforeRender: (resolve, reject, context) => {
-                // User build-in plugin to operate cache resource
+                // Use build-in plugin to operate cache resource
                 Ballpen.$cache.set("name", {
                     data: "Ballpen.js"
                 }).then((result) => {
