@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ballpen.js - 'Plugin - registerPlugin'</title>
+    <style type="text/css">
+        .ul-wrapper {
+            max-height: 200px;
+            overflow: hidden;
+            border: solid 1px black;
+        }
+
+        .ul-wrapper ul li {
+            margin: 50px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+  <h1>Ballpen.js - 'Plugin - registerPlugin'</h1>
+
+  <div class="ul-wrapper" bp-ref="ul-wrapper">
+  <ul>
+    <li bp-for="@list in lists">
+        <p>{{ @list.num }}</p>
+    </li>      
+  </ul>
+  </div>
+
+  <p bp-ref="p">This is {{ name }}, welcome to use! (<span>v{{ version }}</span>)</p>
+
+  <button bp-event:click="click">Click Me</button>
+</div> 
+
+<script src="./third-party-plugins/bscroll.min.js"></script>
+<script src="../dist/ballpen.min.js"></script>
+<script type="text/javascript">
+
+    let data = {
+        name: "Ballpen.js",
+        version: "1.0",
+        lists: [
+            {
+                num: 1
+            },
+            {
+                num: 2
+            },
+            {
+                num: 3
+            },
+            {
+                num: 4
+            }
+        ],
+        scrollObj: {}
+    };
+
+    window.a = new Ballpen("#app", {
+        data: data,
+        lifecycle: {
+            beforeRender: (resolve, reject, context) => {
+                // Register third party plugins into Ballpen's global environment
+                Ballpen.registerPlugin("_s", BScroll);
+
+                return resolve();
+            }
+        },
+        events: {
+            click: (el, context, args) => {
+                Ballpen.$refs['ul-wrapper'].forEach((el) => {
+                    context.scrollObj['ul-wrapper'] = new Ballpen.$_s(el);
+                });
+            }
+        }
+    });
+
+</script>
+</body>
+</html> 
+

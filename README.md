@@ -149,33 +149,40 @@ new Ballpen("#app", {
 
 > You can use `Ballpen.$http` to access ajax releatived operations. Based on [axios](https://github.com/mzabriskie/axios)
 
-> e.g: [examples/plugin-http.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/plugin-http.html)
+> e.g: [examples/plugin-$http.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/plugin-$http.html)
 
 * **Ballpen.$cookie**
 
 > You can use `Ballpen.$cookie` to access cookie releatived operations. Based on [js-cookie](https://github.com/js-cookie/js-cookie)
 
-> e.g: [examples/instance-data.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/instance-data.html)
+> e.g: [examples/plugin-$cookie.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/plugin-$cookie.html)
 
 * **Ballpen.$cache**
 
 > You can use `Ballpen.$cache` to access local cache releatived operations. Based on [localForage](https://github.com/localForage/localForage)
 
-> e.g: [examples/instance-data.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/instance-data.html)
+> e.g: [examples/plugin-$cache.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/plugin-$cache.html)
 
 
 * **Ballpen.$util**
 
 > You can use `Ballpen.$utl` to access many utility methods, such as `isEmpty`, etc. Based on [underscore](https://github.com/jashkenas/underscore)
 
-> e.g: [examples/plugin-util.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/plugin-util.html)
+> e.g: [examples/plugin-$util.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/plugin-$util.html)
 
 
 * **Ballpen.$animate**
 
 > You can use `Ballpen.$animate` to make animations on DOM elements as you wish. Based on [velocity](https://github.com/julianshapiro/velocity)
 
-> e.g: [examples/plugin-animate.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/plugin-animate.html)
+> e.g: [examples/plugin-$animate.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/plugin-$animate.html)
+
+
+### Third Party Plugins
+
+> You can use `Ballpen.registerPlugin(<alias>, <entity>)` to register third party plugins into Ballpen's global environment, then you can call plugin functions by `Ballpen.$<alias>`.
+
+> e.g: [examples/plugin-registerPlugin.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/plugin-registerPlugin.html)
 
 
 ## Instance Properties

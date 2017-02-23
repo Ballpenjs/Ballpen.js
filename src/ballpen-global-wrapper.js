@@ -19,6 +19,9 @@ class BallpenGlobalWrapper {
 
         // Global variables
         Ballpen.$refs = {};
+
+        // Others
+        Ballpen.registerPlugin = BallpenGlobalWrapper.registerPlugin;
     }
 
     static registerPlugin(alias, pluginEntity) {
