@@ -6,6 +6,9 @@ import Velocity from 'velocity-animate';
 import Cookie from 'ballpen-plugin-cookie';
 import Cache from 'ballpen-plugin-cache';
 
+// Ballpen wasm loader
+import WASMLoader from './ballpen-wasm.js';
+
 class BallpenGlobalWrapper {
     static set(Ballpen) {
         Ballpen.registerPlugin = BallpenGlobalWrapper.registerPlugin;
@@ -21,6 +24,7 @@ class BallpenGlobalWrapper {
         Ballpen.$refs = {};
 
         // Others
+        Ballpen.WASMLoader = WASMLoader;
         Ballpen.registerPlugin = BallpenGlobalWrapper.registerPlugin;
     }
 
