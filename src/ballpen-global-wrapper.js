@@ -7,7 +7,7 @@ import Cookie from 'ballpen-plugin-cookie';
 import Cache from 'ballpen-plugin-cache';
 
 // Ballpen wasm loader
-import WASMLoader from './ballpen-wasm.js';
+import wasmLoader from './ballpen-wasm-loader.js';
 
 class BallpenGlobalWrapper {
     static set(Ballpen) {
@@ -24,7 +24,7 @@ class BallpenGlobalWrapper {
         Ballpen.$refs = {};
 
         // Others
-        Ballpen.WASMLoader = WASMLoader;
+        Ballpen.wasmLoader = wasmLoader;
         Ballpen.registerPlugin = BallpenGlobalWrapper.registerPlugin;
     }
 

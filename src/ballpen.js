@@ -1,4 +1,5 @@
 import BallpenUtil from './ballpen-util.js';
+import BallpenVDOM from './ballpen-vdom.js';
 import BallpenGlobalWrapper from './ballpen-global-wrapper.js';
 
 class Ballpen {
@@ -590,6 +591,8 @@ class Ballpen {
                             this.bindEvent(_thisNode, _fnName, _fnType, this.$dataList, {});
                         }
                     });
+
+                    _thisNode.removeAttribute(_i.name);
                 }
 
                 if (/bp-bind/ig.test(_i.name)) {
@@ -622,6 +625,8 @@ class Ballpen {
 
                         this.bindBind(_thisNode, _thisSubModelAbs, _bindKey);
                     });
+
+                    _thisNode.removeAttribute(_i.name);
                 }
             }
 

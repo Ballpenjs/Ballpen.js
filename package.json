@@ -19,7 +19,9 @@
     "Two-way binding",
     "tiny",
     "lightweight",
-    "plugin"
+    "plugin",
+    "wasm",
+    "webassembly"
   ],
   "author": "YHSPY",
   "license": "MIT",
