@@ -153,7 +153,7 @@ class Observer {
 
     static attach(registers) {
         registers.forEach((register) => {
-            BallpenObserver.observeKey(register.obj, register.rootPath, register.key, register.fns);
+            Observer.observeKey(register.obj, register.rootPath, register.key, register.fns);
         });
     };
 }

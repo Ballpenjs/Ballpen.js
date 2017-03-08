@@ -40,7 +40,7 @@ class Ballpen {
 
         // Handle invalid root element
         if (!this.$el) {
-            BallpenError.throw(`Find an invalid root element when initializing Ballpen.js -> "${el}"`, 'Well, you should set a valid root element for Ballpen.js first constructor parameter, eg: "#app", "#container".');  
+            BallpenError.trigger('INIT_INVALID_ROOT', el);
         }
 
         if (dataModel.events) {
@@ -427,7 +427,7 @@ class Ballpen {
         const _identifyKey = BallpenUtil.randomSequence(12);
 
         if (!/^@/ig.test(_cScope)) {
-            BallpenError.throw(`Invalid alias name when initializing a "bp-for" condition -> "${_cScope}".`, 'Please make sure the alias name is start with a "@" symbol.');  
+            BallpenError.trigger('BIND_FOR_INVALID_ALIAS', _cScope);
         }
         
         // Update scope array

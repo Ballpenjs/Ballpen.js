@@ -17,11 +17,17 @@ class WASMLoader {
               }
 
               return new WebAssembly.Instance(module, imports);
+
+              /**
+                  C++ Name Demangler: https://demangler.com/
+               */
         });
     }
 
-    static extract() {
-      
+    static extract(wasmByteStr, imports = {}) {
+        return WebAssembly.compile(new Uint8Array(wasmByteStr.trim().split(/[\s\r\n]+/g).map(str => parseInt(str, 16)))).then(module => {
+            return new WebAssembly.Instance(module, imports);
+        });
     }
 }
 

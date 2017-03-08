@@ -1,9 +1,13 @@
-class Error {
-
-    static get errorEntity() {
+class BallpenError {
+    static errorEntity(aim) {
         return {
             INIT_INVALID_ROOT: {
-               
+               err: `Find an invalid root element when initializing Ballpen.js -> "${aim}"`,
+               desc: 'Well, you should set a valid root element for Ballpen.js first constructor parameter, eg: "#app", "#container".'
+            },
+            BIND_FOR_INVALID_ALIAS: {
+                err: `Invalid alias name when initializing a "bp-for" condition -> "${aim}".`,
+               desc: 'Please make sure the alias name is start with a "@" symbol.'
             }
         };
     };
@@ -17,9 +21,9 @@ class Error {
         throw _e;           
     };
 
-    static trigger(type) {
-        Error.throw(Error.errorEntity[type]);
+    static trigger(type, aim) {
+        BallpenError.throw(BallpenError.errorEntity(aim)[type]);
     };
 }
 
-export default Error;
+export default BallpenError;
