@@ -22,14 +22,18 @@ class Ballpen {
     lifecycleHookPoint(type, dataModel, fn = null) {
         let rawData = dataModel.data;
 
-        if (type === 'beforeRender' && dataModel.lifecycle && dataModel.lifecycle.beforeRender) {
-            new Promise((resolve, reject) => {
-                return dataModel.lifecycle.beforeRender.call(this, resolve, reject, rawData);
-            }).then(() => {
+        if (dataModel.lifecycle) {
+             if (dataModel.lifecycle.beforeRender && type === 'beforeRender') {
+                new Promise((resolve, reject) => {
+                    return dataModel.lifecycle.beforeRender.call(this, resolve, reject, rawData);
+                }).then(() => {
+                    fn && fn.call(this, dataModel);
+                }).catch((err) => {});
+            } else if (dataModel.lifecycle.afterRender && type === 'afterRender') {
+                dataModel.lifecycle.afterRender.call(this, rawData);
+            } else {
                 fn && fn.call(this, dataModel);
-            }).catch((err) => {});
-        } else if (type === 'afterRender' && dataModel.lifecycle && dataModel.lifecycle.afterRender) {
-            dataModel.lifecycle.afterRender.call(this, rawData);
+            }
         } else {
             fn && fn.call(this, dataModel);
         }
@@ -43,11 +47,8 @@ class Ballpen {
             BallpenError.trigger('INIT_INVALID_ROOT', el);
         }
 
-        if (dataModel.events) {
-            this.$eventList = {};
-            this.initEventList(dataModel.events);
-        }
 
+        // Init core features
         if (dataModel.data) {
             // Set proxy to global data payload
             this.$dataListPure = dataModel.data;
@@ -57,6 +58,13 @@ class Ballpen {
             this.$dataList = BallpenUtil.clone(dataModel.data);
         }
 
+        // Events
+        if (dataModel.events) {
+            this.$eventList = {};
+            this.initEventList(dataModel.events);
+        }
+        
+        // Watchers
         if (dataModel.watchers) {
             // Find every reference node in datalist
             this.watchersHook = BallpenUtil.findReferenceNode(this.$dataList);
@@ -81,6 +89,16 @@ class Ballpen {
                 BallpenUtil.renderObjectValueByPath(this.$dataList, path, this.setProxy(path, watcherQueue));
             });
         }
+
+        // Computed
+        if (dataModel.computed) {
+            this.$computedList = {};
+            for (let key in dataModel.computed) {
+                this.$computedList[key] = {};
+                this.$computedList[key]['_reference'] = BallpenUtil.analyzeComputedReference(dataModel.computed[key].toString());
+            }
+        }
+
 
         // Other initializations
         this.$registers = [];

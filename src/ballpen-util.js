@@ -1,3 +1,5 @@
+import AST from './ballpen-ast.js';
+
 class BallpenUtil {
     static findReferenceNode(obj, map = new Map(), root = '') {
         let _root = root;
@@ -148,6 +150,13 @@ class BallpenUtil {
         }
 
         return res;
+    }
+
+    static analyzeComputedReference(fnString) {
+        // Run dfs on an AST
+        let ast = AcornParser(fnString);
+
+        console.log(ast);
     }
 }
 
