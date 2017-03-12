@@ -95,7 +95,8 @@ class Ballpen {
             this.$computedList = {};
             for (let key in dataModel.computed) {
                 this.$computedList[key] = {};
-                this.$computedList[key]['_reference'] = BallpenUtil.analyzeComputedReference(dataModel.computed[key].toString());
+                this.$computedList[key]['_reference'] = BallpenUtil.analyzeComputedReference(dataModel.computed[key].toString(), this.$dataListPure);
+                this.$computedList[key]['_value'] = dataModel.computed[key].call(this, this.$dataListPure);
             }
         }
 
@@ -314,13 +315,13 @@ class Ballpen {
         const modelName = BallpenUtil.wrapAbsPath(rootPath, el.getAttribute('bp-show')); 
 
         BallpenUtil.ignoreInnerDirectives(modelName, [], (el) => {
-            const model = BallpenUtil.parseData(modelName, this.$dataList);
+            const model = BallpenUtil.parseData(modelName, this.$dataList, this.$computedList);
 
             const elStyle = el.style;
  
             (!model.data ? elStyle.display = 'none' : (elStyle.removeProperty ? elStyle.removeProperty('display') : elStyle.removeAttribute('display')));
 
-            BallpenObserver.register(this.$registers, this.$dataList, this.$dataListPure, model.path, (yetVal, nowVal) => {
+            BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, model.path, (yetVal, nowVal) => {
                 (!nowVal ? elStyle.display = 'none' : (elStyle.removeProperty ? elStyle.removeProperty('display') : elStyle.removeAttribute('display')));
             });
         }, el);
@@ -338,11 +339,11 @@ class Ballpen {
 
                 (el.tagName === 'INPUT' ? el.value = index : el.innerText = index);
             } else {
-                const model = BallpenUtil.parseData(modelName, this.$dataList);
+                const model = BallpenUtil.parseData(modelName, this.$dataList, this.$computedList);
 
                 (el.tagName === 'INPUT' ? el.value = model.data : el.innerText = model.data);
 
-                BallpenObserver.register(this.$registers, this.$dataList, this.$dataListPure, model.path, (yetVal, nowVal) => {
+                BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, model.path, (yetVal, nowVal) => {
                     (el.tagName === 'INPUT' ? el.value = nowVal : el.innerText = nowVal);
                 });
             }
@@ -364,10 +365,10 @@ class Ballpen {
                 if (/^@{([\d]+)}$/ig.test(modelName)) {
                     modelsMapper[pattern] = modelName.match(/^@{([\d]+)}$/)[1];
                 } else {
-                    let model = BallpenUtil.parseData(BallpenUtil.wrapAbsPath(rootPath, modelName), this.$dataList);
+                    let model = BallpenUtil.parseData(BallpenUtil.wrapAbsPath(rootPath, modelName), this.$dataList, this.$computedList);
                     modelsMapper[pattern] = model.data;
 
-                    BallpenObserver.register(this.$registers, this.$dataList, this.$dataListPure, model.path, (yetVal, nowVal) => {
+                    BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, model.path, (yetVal, nowVal) => {
                         modelsMapper[`{{ ${model.path.join('.')} }}`] = nowVal;
                         for (let pattern in modelsMapper) {
                             subTextNodeValueRendered = subTextNodeValuePure.replace(pattern, modelsMapper[pattern]);
@@ -390,13 +391,13 @@ class Ballpen {
         const modelName = BallpenUtil.wrapAbsPath(rootPath, el.getAttribute('bp-class'));
 
         BallpenUtil.ignoreInnerDirectives(modelName, [], (el) => {
-            const model = BallpenUtil.parseData(modelName, this.$dataList);
+            const model = BallpenUtil.parseData(modelName, this.$dataList, this.$computedList);
 
             if (!el.classList.contains(model.data)) {
                 el.classList.add(model.data);
             }
 
-            BallpenObserver.register(this.$registers, this.$dataList, this.$dataListPure, model.path, (yetVal, nowVal) => {
+            BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, model.path, (yetVal, nowVal) => {
                 el.classList.remove(yetVal);
                 if (!el.classList.contains(nowVal)) {
                     el.classList.add(nowVal);
@@ -426,13 +427,13 @@ class Ballpen {
     bindBind(el, _bindValue, _bindKey, rootPath = []) {
         BallpenUtil.ignoreInnerDirectives(_bindValue, [], (el, _bindValue, _bindKey) => {
             const modelName = BallpenUtil.wrapAbsPath(rootPath, _bindValue);
-            const model = BallpenUtil.parseData(modelName, this.$dataList);
+            const model = BallpenUtil.parseData(modelName, this.$dataList, this.$computedList);
 
             // Set customized attribute
             el.setAttribute(_bindKey, model.data);
             
             // Bind listener, set callback fn to global data context
-            BallpenObserver.register(this.$registers, this.$dataList, this.$dataListPure, model.path, (yetVal, nowVal) => {
+            BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, model.path, (yetVal, nowVal) => {
                 el.setAttribute(_bindKey, nowVal);
             });
         }, el, _bindValue, _bindKey);
@@ -460,7 +461,7 @@ class Ballpen {
         let closureScope = BallpenUtil.clone(scope);
         let closureIndexStack = BallpenUtil.clone(indexStack);
 
-        const model = BallpenUtil.parseData(scope[_pScope], this.$dataList);
+        const model = BallpenUtil.parseData(scope[_pScope], this.$dataList, this.$computedList);
         
         let parentNode = el.parentNode;
         let virtualDiv = document.createDocumentFragment();
@@ -486,7 +487,7 @@ class Ballpen {
         parentNode.replaceChild(virtualDiv, el);
 
         // Set register
-        BallpenObserver.register(this.$registers, this.$dataList, this.$dataListPure, model.path, (yetVal, nowVal) => {
+        BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, model.path, (yetVal, nowVal) => {
             let virtualDiv = document.createDocumentFragment();
 
             for (let i = 0; i < nowVal.length; i++) {

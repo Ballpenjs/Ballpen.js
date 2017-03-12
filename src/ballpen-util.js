@@ -1,4 +1,4 @@
-import AST from './ballpen-ast.js';
+import Filter from './ballpen-filter.js';
 
 class BallpenUtil {
     static findReferenceNode(obj, map = new Map(), root = '') {
@@ -72,7 +72,17 @@ class BallpenUtil {
         }
     };
 
-    static parseData(str, dataObj) {
+    static parseData(str, dataObj, comObj = {}) {
+        if (str.charAt(0) === '*') {
+            return {
+                path: {
+                    real: str,
+                    base: comObj[str.substring(1)]['_reference']
+                },
+                data: comObj[str.substring(1)]['_value']
+            };
+        }
+
         const _list = str.split('.');
         let _data = dataObj;
         let p = [];
@@ -152,11 +162,15 @@ class BallpenUtil {
         return res;
     }
 
-    static analyzeComputedReference(fnString) {
-        // Run dfs on an AST
-        let ast = AcornParser(fnString);
+    static analyzeComputedReference(fnString, dataObj) {
+        let pathes = Filter.filterParams(fnString);
+        let references = {};
 
-        console.log(ast);
+        pathes.forEach((value, key) => {
+            references[value] = BallpenUtil.parseData(value, dataObj).data;
+        });
+
+        return references;
     }
 }
 

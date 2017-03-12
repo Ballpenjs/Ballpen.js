@@ -28,7 +28,9 @@ class Observer {
         if (BallpenUtil.isArray(key)) {
             Observer.observePath(obj, rootPath, key, fns);
         } else {
-            let yetVal = obj[key];
+            // Normal attribtues or computed attributes
+            let isComputed = BallpenUtil.isObject(obj[key]);
+            let yetVal = isComputed ? obj[key]['_value'] : obj[key];
             const currentPath = rootPath;
            
             if (BallpenUtil.isObject(yetVal)) {
@@ -44,7 +46,10 @@ class Observer {
 
                             yetVal = nowVal;
 
-                            BallpenUtil.renderObjectValueByPath(this.$dataListPure, currentPath, nowVal);
+                            // Disabled when update a computed attribute
+                            if (!isComputed) {
+                                BallpenUtil.renderObjectValueByPath(this.$dataListPure, currentPath, nowVal);
+                            }
                         }
                     },
                     enumerable: true,
@@ -67,7 +72,9 @@ class Observer {
 
                             yetVal = nowVal;
 
-                            BallpenUtil.renderObjectValueByPath(this.$dataListPure, currentPath, nowVal);
+                            if (!isComputed) {
+                                BallpenUtil.renderObjectValueByPath(this.$dataListPure, currentPath, nowVal);
+                            }
                         }
                     },
                     enumerable: true,
@@ -88,7 +95,9 @@ class Observer {
 
                             yetVal = nowVal;
 
-                            BallpenUtil.renderObjectValueByPath(this.$dataListPure, currentPath, nowVal);
+                            if (!isComputed) {
+                                BallpenUtil.renderObjectValueByPath(this.$dataListPure, currentPath, nowVal);
+                            }
                         }
                     },
                     enumerable: true,
@@ -132,22 +141,68 @@ class Observer {
         // arr.__proto__.__proto__ === Array.prototype; // true
     };
 
-    static register(registers, obj, objPure, key, fn) {
-        const register = registers.find((item) => {
-            if (Object.is(item.obj, obj) && (item.key === key || item.key.toString() === key.toString())) {
-                return item;
-            }
-        });
-
-        if (register) {
-            register.fns.push(fn);
-        } else {
-            registers.push({
-                obj: obj,
-                rootPath: [],
-                key: key,
-                fns: [fn]
+    static register(registers, obj, objCompute, key, fn) {
+        if (BallpenUtil.isObject(key)) {
+            // For computed attributes
+            const register = registers.find((item) => {
+                if (Object.is(item.obj, objCompute) && (item.key === key.real || item.key.toString() === key.real.toString())) {
+                    return item;
+                }
             });
+
+            if (register) {
+                register.fns.push(fn);
+            } else {
+                registers.push({
+                    obj: objCompute,
+                    rootPath: [],
+                    key: key.real.substring(1),  // Remove '*' at the top of computed attribute
+                    fns: [fn]
+                });
+            }
+
+            // Set setter/getter on inner children
+            for (let _k in key.base) {
+                const register = registers.find((item) => {
+                    if (Object.is(item.obj, obj) && (item.key === _k || item.key.toString() === _k.toString())) {
+                        return item;
+                    }
+                });
+
+                let fn = (yetVal, nowVal) => {
+                    if (nowVal !== yetVal) {
+                        console.log(11);
+                    }
+                };
+
+                if (register) {
+                    register.fns.push(fn);
+                } else {
+                    registers.push({
+                        obj: obj,
+                        rootPath: [],
+                        key: _k,
+                        fns: [fn]
+                    });
+                }
+            }
+        } else if (BallpenUtil.isArray(key)) {
+            const register = registers.find((item) => {
+                if (Object.is(item.obj, obj) && (item.key === key || item.key.toString() === key.toString())) {
+                    return item;
+                }
+            });
+
+            if (register) {
+                register.fns.push(fn);
+            } else {
+                registers.push({
+                    obj: obj,
+                    rootPath: [],
+                    key: key,
+                    fns: [fn]
+                });
+            }
         }
     };
 
