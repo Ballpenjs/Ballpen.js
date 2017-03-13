@@ -1,7 +1,7 @@
 import BallpenUtil from './ballpen-util.js';
 
 class Observer {
-	static observePath(obj, rootPath, paths, fns) {
+	static observePath(obj, objPure, rootPath, paths, fns) {
         if (BallpenUtil.isArray(paths)) {
             let _path = obj;
             let _key;
@@ -20,13 +20,13 @@ class Observer {
 
             rootPath = paths.join('.');
 
-            Observer.observeKey(_path, rootPath, _key, fns);
+            Observer.observeKey(_path, objPure, rootPath, _key, fns);
         }
     };
 
-    static observeKey(obj, rootPath, key, fns = false) {            
+    static observeKey(obj, objPure, rootPath, key, fns = false) {            
         if (BallpenUtil.isArray(key)) {
-            Observer.observePath(obj, rootPath, key, fns);
+            Observer.observePath(obj, objPure, rootPath, key, fns);
         } else {
             // Normal attribtues or computed attributes
             let isComputed = BallpenUtil.isObject(obj[key]);
@@ -48,7 +48,7 @@ class Observer {
 
                             // Disabled when update a computed attribute
                             if (!isComputed) {
-                                BallpenUtil.renderObjectValueByPath(this.$dataListPure, currentPath, nowVal);
+                                BallpenUtil.renderObjectValueByPath(objPure, currentPath, nowVal);
                             }
                         }
                     },
@@ -73,7 +73,7 @@ class Observer {
                             yetVal = nowVal;
 
                             if (!isComputed) {
-                                BallpenUtil.renderObjectValueByPath(this.$dataListPure, currentPath, nowVal);
+                                BallpenUtil.renderObjectValueByPath(objPure, currentPath, nowVal);
                             }
                         }
                     },
@@ -81,7 +81,7 @@ class Observer {
                     configurable: true
                 });
 
-                Observer.observeArray(yetVal, currentPath, fns);
+                Observer.observeArray(yetVal, objPure, currentPath, fns);
             } else {
                 Object.defineProperty(obj, key, {
                     get: () => {
@@ -96,7 +96,7 @@ class Observer {
                             yetVal = nowVal;
 
                             if (!isComputed) {
-                                BallpenUtil.renderObjectValueByPath(this.$dataListPure, currentPath, nowVal);
+                                BallpenUtil.renderObjectValueByPath(objPure, currentPath, nowVal);
                             }
                         }
                     },
@@ -107,7 +107,7 @@ class Observer {
         }
     };
     
-    static observeArray(arr, rootPath, fns = false) {
+    static observeArray(arr, objPure, rootPath, fns = false) {
         const mutatorMethods = ['copyWithin', 'fill', 'pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'];
         const arrayProto = Array.prototype;
 
@@ -126,7 +126,7 @@ class Observer {
                     let resultVal = arrayProto[method].call(arr, ...args);
                     let nowVal = arr;
 
-                    BallpenUtil.renderObjectValueByPath(this.$dataListPure, currentPath, nowVal);
+                    BallpenUtil.renderObjectValueByPath(objPure, currentPath, nowVal);
                     // Callback
                     fns && fns.forEach((fn) => {
                         fn.call(this, yetVal, nowVal);
@@ -141,7 +141,7 @@ class Observer {
         // arr.__proto__.__proto__ === Array.prototype; // true
     };
 
-    static register(registers, obj, objCompute, key, fn) {
+    static register(registers, obj, objCompute, objPure, key, fn) {
         if (BallpenUtil.isObject(key)) {
             // For computed attributes
             const register = registers.find((item) => {
@@ -170,7 +170,7 @@ class Observer {
                 });
 
                 let fn = (yetVal, nowVal) => {
-                    if (nowVal !== yetVal) {
+                    if (nowVal !== yetVal) { 
                         console.log(11);
                     }
                 };
@@ -180,8 +180,9 @@ class Observer {
                 } else {
                     registers.push({
                         obj: obj,
+                        objPure: objPure,
                         rootPath: [],
-                        key: _k,
+                        key: BallpenUtil.parseData(_k, obj).path,
                         fns: [fn]
                     });
                 }
@@ -198,6 +199,7 @@ class Observer {
             } else {
                 registers.push({
                     obj: obj,
+                    objPure: objPure,
                     rootPath: [],
                     key: key,
                     fns: [fn]
@@ -208,7 +210,7 @@ class Observer {
 
     static attach(registers) {
         registers.forEach((register) => {
-            Observer.observeKey(register.obj, register.rootPath, register.key, register.fns);
+            Observer.observeKey(register.obj, register.objPure, register.rootPath, register.key, register.fns);
         });
     };
 }

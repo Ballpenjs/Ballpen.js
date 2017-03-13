@@ -100,7 +100,7 @@ class Ballpen {
             }
         }
 
-
+        console.log(this.$computedList);
         // Other initializations
         this.$registers = [];
     };
@@ -321,7 +321,7 @@ class Ballpen {
  
             (!model.data ? elStyle.display = 'none' : (elStyle.removeProperty ? elStyle.removeProperty('display') : elStyle.removeAttribute('display')));
 
-            BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, model.path, (yetVal, nowVal) => {
+            BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, this.$dataListPure, model.path, (yetVal, nowVal) => {
                 (!nowVal ? elStyle.display = 'none' : (elStyle.removeProperty ? elStyle.removeProperty('display') : elStyle.removeAttribute('display')));
             });
         }, el);
@@ -343,7 +343,7 @@ class Ballpen {
 
                 (el.tagName === 'INPUT' ? el.value = model.data : el.innerText = model.data);
 
-                BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, model.path, (yetVal, nowVal) => {
+                BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, this.$dataListPure, model.path, (yetVal, nowVal) => {
                     (el.tagName === 'INPUT' ? el.value = nowVal : el.innerText = nowVal);
                 });
             }
@@ -368,7 +368,7 @@ class Ballpen {
                     let model = BallpenUtil.parseData(BallpenUtil.wrapAbsPath(rootPath, modelName), this.$dataList, this.$computedList);
                     modelsMapper[pattern] = model.data;
 
-                    BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, model.path, (yetVal, nowVal) => {
+                    BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, this.$dataListPure, model.path, (yetVal, nowVal) => {
                         modelsMapper[`{{ ${model.path.join('.')} }}`] = nowVal;
                         for (let pattern in modelsMapper) {
                             subTextNodeValueRendered = subTextNodeValuePure.replace(pattern, modelsMapper[pattern]);
@@ -397,7 +397,7 @@ class Ballpen {
                 el.classList.add(model.data);
             }
 
-            BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, model.path, (yetVal, nowVal) => {
+            BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, this.$dataListPure, model.path, (yetVal, nowVal) => {
                 el.classList.remove(yetVal);
                 if (!el.classList.contains(nowVal)) {
                     el.classList.add(nowVal);
@@ -433,7 +433,7 @@ class Ballpen {
             el.setAttribute(_bindKey, model.data);
             
             // Bind listener, set callback fn to global data context
-            BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, model.path, (yetVal, nowVal) => {
+            BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, this.$dataListPure, model.path, (yetVal, nowVal) => {
                 el.setAttribute(_bindKey, nowVal);
             });
         }, el, _bindValue, _bindKey);
@@ -487,7 +487,7 @@ class Ballpen {
         parentNode.replaceChild(virtualDiv, el);
 
         // Set register
-        BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, model.path, (yetVal, nowVal) => {
+        BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, this.$dataListPure, model.path, (yetVal, nowVal) => {
             let virtualDiv = document.createDocumentFragment();
 
             for (let i = 0; i < nowVal.length; i++) {
