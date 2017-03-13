@@ -8,7 +8,7 @@
 </p>
 
 ## Description
-**Ballpen.js** is a lightweight, plugin based mvvm developing framework ready for building flexible web apps. It's very easy to use, and you can get it into your work only after a few minutes's quick learning.
+**Ballpen.js** is an advanced, plugin based mvvm developing framework ready for building flexible web apps. It's very easy to use, and you can get it into your work only after a few minutes's quick learning.
 
 ## Installation
 

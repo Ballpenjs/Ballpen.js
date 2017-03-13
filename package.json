@@ -1,7 +1,7 @@
 {
   "name": "ballpen.js",
   "version": "0.1.5",
-  "description": "A lightweight, plugin based mvvm framework ready for building flexible web apps.",
+  "description": "An advanced, plugin based mvvm framework ready for building flexible web apps.",
   "main": "dist/ballpen.min.js",
   "scripts": {
     "dev": "rollup -c -w",
@@ -18,8 +18,6 @@
     "ballpen",
     "es6",
     "Two-way binding",
-    "tiny",
-    "lightweight",
     "plugin",
     "wasm",
     "webassembly"

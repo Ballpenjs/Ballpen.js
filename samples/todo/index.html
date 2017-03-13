@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ballpen.js Samples - 'TODO List'</title>
+    <style type="text/css">
+      body {
+        overflow-x: hidden; 
+      }
+
+      #app {
+        width: 700px;
+        margin: auto;
+      }
+
+      #app h1 {
+        text-align: center;
+      }
+
+      #app li {
+        padding: 15px;
+        margin-bottom: 10px;
+        list-style: none;
+        background-color: lightgrey;
+        border-left: solid 5px green;
+      }
+
+      #app li .words {
+        display: inline-block;
+        width: 80%;
+      }
+
+      #app li .btn {
+        display: inline-block;
+        border: none;
+        padding: 15px;
+        background-color: white;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      [bp-shade] {
+        display: none;
+      }
+    </style>
+</head>
+<body>
+
+<div id="app" bp-shade>
+  <h1>Ballpen.js Samples - 'TODO List'</h1>
+  <ul>
+    <li bp-for="@todo in todoList" bp-show="@todo.show">
+      <div class="words">
+        <h3>{{ @todo.title }}</h3>
+        <h6>{{ @todo.date }}</h6>
+      </div>
+      <button class="btn" bp-event:click="doneIt">DONE</button>
+    </li>
+  </ul>
+  
+</div> 
+
+<script src="../../dist/ballpen.min.js"></script>
+<script type="text/javascript">
+
+    let data = {
+        todoList: [
+            {
+              title: 'Pin note color and more option',
+              date: '2017-03-18',
+              show: true
+            },
+            {
+              title: 'Order task in more ways',
+              date: '2017-03-17',
+              show: true
+            },
+            {
+              title: 'Sync with Google tasks',
+              date: '2017-03-16',
+              show: true
+            },
+            {
+              title: 'Quick add task with due date and priority',
+              date: '2017-03-16',
+              show: true
+            },
+            {
+              title: 'More repeat condition',
+              date: '2017-03-13',
+              show: true
+            }
+        ]
+    };
+
+    new Ballpen("#app", {
+        data: data,
+        events: {
+          doneIt: (el, context, ...args) => {
+            Ballpen.$animate(el.parentNode, {
+              opacity: 0, 
+              translateX: "200px"
+            }, {
+                progress: function(elements, complete, remaining, start, tweenValue) {
+                    if(complete == 1) {
+                      el.parentNode.style.display = 'none';
+
+                      // Send ajax request or do any other opeartions you want
+
+                    }
+                }
+            });
+          }
+        }
+    });
+
+</script>
+</body>
+</html> 
