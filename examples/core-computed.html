@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ballpen.js - 'Computed Attributes'</title>
+</head>
+<body>
+
+<div id="app">
+  <h1>Ballpen.js - 'Computed Attributes'</h1>
+
+  <p>{{ *name }}</p>
+  <p>{{ name }}</p>
+  <p>{{ appendix }}</p>
+  <button bp-event:click="ALTER">ALTER</button>
+</div> 
+
+<script src="../dist/ballpen.min.js"></script>
+<script type="text/javascript">
+
+    let data = {
+        name: "Ballpen.js",
+        appendix: "####"
+    };
+
+    new Ballpen("#app", {
+        data: data,
+        computed: {
+          name: (getter) => {
+            return `This value was computed -> ${getter.name + getter.appendix}`;
+          }
+        },
+        events: {
+          ALTER: (el, context) => {
+            context.name = context.name.split('.').reverse().join('.');
+          }
+        }
+    });
+
+</script>
+</body>
+</html> 
+

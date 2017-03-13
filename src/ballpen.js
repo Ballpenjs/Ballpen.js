@@ -1,4 +1,6 @@
 import BallpenUtil from './ballpen-util.js';
+import BallpenObserver from './ballpen-observer.js';
+import BallpenError from './ballpen-error.js';
 import BallpenGlobalWrapper from './ballpen-global-wrapper.js';
 
 class Ballpen {
@@ -20,14 +22,18 @@ class Ballpen {
     lifecycleHookPoint(type, dataModel, fn = null) {
         let rawData = dataModel.data;
 
-        if (type === 'beforeRender' && dataModel.lifecycle && dataModel.lifecycle.beforeRender) {
-            new Promise((resolve, reject) => {
-                return dataModel.lifecycle.beforeRender.call(this, resolve, reject, rawData);
-            }).then(() => {
+        if (dataModel.lifecycle) {
+             if (dataModel.lifecycle.beforeRender && type === 'beforeRender') {
+                new Promise((resolve, reject) => {
+                    return dataModel.lifecycle.beforeRender.call(this, resolve, reject, rawData);
+                }).then(() => {
+                    fn && fn.call(this, dataModel);
+                }).catch((err) => {});
+            } else if (dataModel.lifecycle.afterRender && type === 'afterRender') {
+                dataModel.lifecycle.afterRender.call(this, rawData);
+            } else {
                 fn && fn.call(this, dataModel);
-            }).catch((err) => {});
-        } else if (type === 'afterRender' && dataModel.lifecycle && dataModel.lifecycle.afterRender) {
-            dataModel.lifecycle.afterRender.call(this, rawData);
+            }
         } else {
             fn && fn.call(this, dataModel);
         }
@@ -38,14 +44,11 @@ class Ballpen {
 
         // Handle invalid root element
         if (!this.$el) {
-            BallpenUtil.throwError(`Find an invalid root element when initializing Ballpen.js -> "${el}"`, 'Well, you should set a valid root element for Ballpen.js first constructor parameter, eg: "#app", "#container".');  
+            BallpenError.trigger('INIT_INVALID_ROOT', el);
         }
 
-        if (dataModel.events) {
-            this.$eventList = {};
-            this.initEventList(dataModel.events);
-        }
 
+        // Init core features
         if (dataModel.data) {
             // Set proxy to global data payload
             this.$dataListPure = dataModel.data;
@@ -55,6 +58,13 @@ class Ballpen {
             this.$dataList = BallpenUtil.clone(dataModel.data);
         }
 
+        // Events
+        if (dataModel.events) {
+            this.$eventList = {};
+            this.initEventList(dataModel.events);
+        }
+        
+        // Watchers
         if (dataModel.watchers) {
             // Find every reference node in datalist
             this.watchersHook = BallpenUtil.findReferenceNode(this.$dataList);
@@ -78,6 +88,19 @@ class Ballpen {
             this.watchersHook.forEach((watcherQueue, path) => {
                 BallpenUtil.renderObjectValueByPath(this.$dataList, path, this.setProxy(path, watcherQueue));
             });
+        }
+
+        // Computed
+        if (dataModel.computed) {
+            this.$computedList = {};
+            for (let key in dataModel.computed) {
+                this.$computedList[key] = {};
+                this.$computedList['_reference'] = {};
+                this.$computedList['_fn'] = {};
+                this.$computedList['_reference'][key] = BallpenUtil.analyzeComputedReference(dataModel.computed[key].toString(), this.$dataListPure);
+                this.$computedList['_fn'][key] = dataModel.computed[key];
+                this.$computedList[key] = dataModel.computed[key].call(this, this.$dataListPure);
+            }
         }
 
         // Other initializations
@@ -268,7 +291,7 @@ class Ballpen {
 
         if (init) {
             // Attach observers
-            this.attach();
+            BallpenObserver.attach(this.$registers);
             // Show rendered view
             this.$el.removeAttribute('bp-shade');
 
@@ -294,13 +317,13 @@ class Ballpen {
         const modelName = BallpenUtil.wrapAbsPath(rootPath, el.getAttribute('bp-show')); 
 
         BallpenUtil.ignoreInnerDirectives(modelName, [], (el) => {
-            const model = BallpenUtil.parseData(modelName, this.$dataList);
+            const model = BallpenUtil.parseData(modelName, this.$dataList, this.$computedList);
 
             const elStyle = el.style;
  
             (!model.data ? elStyle.display = 'none' : (elStyle.removeProperty ? elStyle.removeProperty('display') : elStyle.removeAttribute('display')));
 
-            this.register(this.$dataList, this.$dataListPure, model.path, (yetVal, nowVal) => {
+            BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, this.$dataListPure, model.path, (yetVal, nowVal) => {
                 (!nowVal ? elStyle.display = 'none' : (elStyle.removeProperty ? elStyle.removeProperty('display') : elStyle.removeAttribute('display')));
             });
         }, el);
@@ -318,11 +341,11 @@ class Ballpen {
 
                 (el.tagName === 'INPUT' ? el.value = index : el.innerText = index);
             } else {
-                const model = BallpenUtil.parseData(modelName, this.$dataList);
+                const model = BallpenUtil.parseData(modelName, this.$dataList, this.$computedList);
 
                 (el.tagName === 'INPUT' ? el.value = model.data : el.innerText = model.data);
 
-                this.register(this.$dataList, this.$dataListPure, model.path, (yetVal, nowVal) => {
+                BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, this.$dataListPure, model.path, (yetVal, nowVal) => {
                     (el.tagName === 'INPUT' ? el.value = nowVal : el.innerText = nowVal);
                 });
             }
@@ -344,10 +367,10 @@ class Ballpen {
                 if (/^@{([\d]+)}$/ig.test(modelName)) {
                     modelsMapper[pattern] = modelName.match(/^@{([\d]+)}$/)[1];
                 } else {
-                    let model = BallpenUtil.parseData(BallpenUtil.wrapAbsPath(rootPath, modelName), this.$dataList);
+                    let model = BallpenUtil.parseData(BallpenUtil.wrapAbsPath(rootPath, modelName), this.$dataList, this.$computedList);
                     modelsMapper[pattern] = model.data;
 
-                    this.register(this.$dataList, this.$dataListPure, model.path, (yetVal, nowVal) => {
+                    BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, this.$dataListPure, model.path, (yetVal, nowVal) => {
                         modelsMapper[`{{ ${model.path.join('.')} }}`] = nowVal;
                         for (let pattern in modelsMapper) {
                             subTextNodeValueRendered = subTextNodeValuePure.replace(pattern, modelsMapper[pattern]);
@@ -359,7 +382,7 @@ class Ballpen {
             });
             
             for (let pattern in modelsMapper) {
-                subTextNodeValueRendered = subTextNodeValuePure.replace(pattern, modelsMapper[pattern]);
+                subTextNodeValueRendered = subTextNodeValueRendered.replace(pattern, modelsMapper[pattern]);
             }      
         }
 
@@ -370,13 +393,13 @@ class Ballpen {
         const modelName = BallpenUtil.wrapAbsPath(rootPath, el.getAttribute('bp-class'));
 
         BallpenUtil.ignoreInnerDirectives(modelName, [], (el) => {
-            const model = BallpenUtil.parseData(modelName, this.$dataList);
+            const model = BallpenUtil.parseData(modelName, this.$dataList, this.$computedList);
 
             if (!el.classList.contains(model.data)) {
                 el.classList.add(model.data);
             }
 
-            this.register(this.$dataList, this.$dataListPure, model.path, (yetVal, nowVal) => {
+            BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, this.$dataListPure, model.path, (yetVal, nowVal) => {
                 el.classList.remove(yetVal);
                 if (!el.classList.contains(nowVal)) {
                     el.classList.add(nowVal);
@@ -406,13 +429,13 @@ class Ballpen {
     bindBind(el, _bindValue, _bindKey, rootPath = []) {
         BallpenUtil.ignoreInnerDirectives(_bindValue, [], (el, _bindValue, _bindKey) => {
             const modelName = BallpenUtil.wrapAbsPath(rootPath, _bindValue);
-            const model = BallpenUtil.parseData(modelName, this.$dataList);
+            const model = BallpenUtil.parseData(modelName, this.$dataList, this.$computedList);
 
             // Set customized attribute
             el.setAttribute(_bindKey, model.data);
             
             // Bind listener, set callback fn to global data context
-            this.register(this.$dataList, this.$dataListPure, model.path, (yetVal, nowVal) => {
+            BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, this.$dataListPure, model.path, (yetVal, nowVal) => {
                 el.setAttribute(_bindKey, nowVal);
             });
         }, el, _bindValue, _bindKey);
@@ -425,7 +448,7 @@ class Ballpen {
         const _identifyKey = BallpenUtil.randomSequence(12);
 
         if (!/^@/ig.test(_cScope)) {
-            BallpenUtil.throwError(`Invalid alias name when initializing a "bp-for" condition -> "${_cScope}".`, 'Please make sure the alias name is start with a "@" symbol.');  
+            BallpenError.trigger('BIND_FOR_INVALID_ALIAS', _cScope);
         }
         
         // Update scope array
@@ -440,20 +463,22 @@ class Ballpen {
         let closureScope = BallpenUtil.clone(scope);
         let closureIndexStack = BallpenUtil.clone(indexStack);
 
-        const model = BallpenUtil.parseData(scope[_pScope], this.$dataList);
+        const model = BallpenUtil.parseData(scope[_pScope], this.$dataList, this.$computedList);
         
         let parentNode = el.parentNode;
         let virtualDiv = document.createDocumentFragment();
 
-        for (let i = 0; i < model.data.length; i++) {
+        // Parent scope is a native number -> model.data
+        const iterateCount = model.data.length ? model.data.length : model.data;
+        for (let i = 0; i < iterateCount; i++) {
             let _div = el.cloneNode(true);
             let _dataPath = `${scope[_pScope]}.${i}`;
 
             // Update current scope chain
             scope[_cScope] = _dataPath;
 
-            // Update current index chain
-            indexStack[_cScope] = i;
+            // Update current index chain (start with 1)
+            indexStack[_cScope] = i + 1;
 
             _div.removeAttribute('bp-for');
             _div.setAttribute('bp-for-rendered-id', _identifyKey);
@@ -466,10 +491,12 @@ class Ballpen {
         parentNode.replaceChild(virtualDiv, el);
 
         // Set register
-        this.register(this.$dataList, this.$dataListPure, model.path, (yetVal, nowVal) => {
+        BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, this.$dataListPure, model.path, (yetVal, nowVal) => {
             let virtualDiv = document.createDocumentFragment();
 
-            for (let i = 0; i < nowVal.length; i++) {
+            // Parent scope is a native number -> nowVal
+            const iterateCount = nowVal.length ? nowVal.length : nowVal;
+            for (let i = 0; i < iterateCount; i++) {
                 let _div = el.cloneNode(true);
                 let _dataPath = `${closureScope[_pScope]}.${i}`;
 
@@ -508,7 +535,6 @@ class Ballpen {
             let childNodes = _thisNode.childNodes;
             childNodes.forEach((item, key) => {
                 if (item.nodeType === Node.TEXT_NODE) {
-                    let subTextNodeValuePure = item.nodeValue;
                     let subTextNodeValueRendered = item.nodeValue;
 
                     let subPatterns = subTextNodeValueRendered.match(/{{.*?}}/ig);
@@ -520,7 +546,7 @@ class Ballpen {
                             let _thisSubModelAbs = _thisSubModel;
 
                             if (/^@/ig.test(_thisSubModel)) {
-                            // Get index
+                                // Get index
                                 if (/\[\[index\]\]/ig.test(_thisSubModel)) {
                                     _thisSubModelAbs = '@{' + `${indexStack[_thisSubModel.match(/^(.*)\[\[index\]\]$/)[1]]}` + '}';
                                 } else {
@@ -530,9 +556,9 @@ class Ballpen {
 
                             modelsMapper[pattern] = `{{ ${_thisSubModelAbs} }}`;
                         });
-                        
+                   
                         for (let pattern in modelsMapper) {
-                            subTextNodeValueRendered = subTextNodeValuePure.replace(pattern, modelsMapper[pattern]);
+                            subTextNodeValueRendered = subTextNodeValueRendered.replace(pattern, modelsMapper[pattern]);
                         }      
                     }
 
@@ -590,6 +616,8 @@ class Ballpen {
                             this.bindEvent(_thisNode, _fnName, _fnType, this.$dataList, {});
                         }
                     });
+
+                    _thisNode.removeAttribute(_i.name);
                 }
 
                 if (/bp-bind/ig.test(_i.name)) {
@@ -622,6 +650,8 @@ class Ballpen {
 
                         this.bindBind(_thisNode, _thisSubModelAbs, _bindKey);
                     });
+
+                    _thisNode.removeAttribute(_i.name);
                 }
             }
 
@@ -696,163 +726,6 @@ class Ballpen {
             fn && fn.call(this, el);
         }
     };
-
-    observePath(obj, rootPath, paths, fns) {
-        if (BallpenUtil.isArray(paths)) {
-            let _path = obj;
-            let _key;
-
-            paths.forEach((key, index) => {
-                if (/^\d+$/.test(key)) {
-                    key = parseInt(key);
-                }
-
-                if (index < paths.length - 1) {
-                    _path = _path[key];
-                } else {    
-                    _key = key;
-                }
-            });
-
-            rootPath = paths.join('.');
-
-            this.observeKey(_path, rootPath, _key, fns);
-        }
-    };
-
-    observeKey(obj, rootPath, key, fns = false) {            
-        if (BallpenUtil.isArray(key)) {
-            this.observePath(obj, rootPath, key, fns);
-        } else {
-            let yetVal = obj[key];
-            const currentPath = rootPath;
-           
-            if (BallpenUtil.isObject(yetVal)) {
-                Object.defineProperty(obj, key, {
-                    get: () => {
-                        return yetVal;
-                    },
-                    set: (nowVal) => {  
-                        if (nowVal !== yetVal) {
-                            fns && fns.forEach((fn) => {
-                                fn.call(this, yetVal, nowVal);
-                            });
-
-                            yetVal = nowVal;
-
-                            BallpenUtil.renderObjectValueByPath(this.$dataListPure, currentPath, nowVal);
-                        }
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-
-                Object.keys(yetVal).forEach((key) => {
-                    this.observeKey(yetVal, currentPath + '.' + key, key, fns);
-                });
-            } else if (BallpenUtil.isArray(yetVal)) {
-                Object.defineProperty(obj, key, {
-                    get: () => {
-                        return yetVal;
-                    },
-                    set: (nowVal) => {  
-                        if (nowVal !== yetVal) {
-                            fns && fns.forEach((fn) => {
-                                fn.call(this, yetVal, nowVal);
-                            });
-
-                            yetVal = nowVal;
-
-                            BallpenUtil.renderObjectValueByPath(this.$dataListPure, currentPath, nowVal);
-                        }
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-
-                this.observeArray(yetVal, currentPath, fns);
-            } else {
-                Object.defineProperty(obj, key, {
-                    get: () => {
-                        return yetVal;
-                    },
-                    set: (nowVal) => {  
-                        if (nowVal !== yetVal) {
-                            fns && fns.forEach((fn) => {
-                                fn.call(this, yetVal, nowVal);
-                            });
-
-                            yetVal = nowVal;
-
-                            BallpenUtil.renderObjectValueByPath(this.$dataListPure, currentPath, nowVal);
-                        }
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-            }
-        }
-    };
-    
-    observeArray(arr, rootPath, fns = false) {
-        const mutatorMethods = ['copyWithin', 'fill', 'pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'];
-        const arrayProto = Array.prototype;
-
-        // Prevent from polluting the global 'Array.prototype'
-        const hijackProto = Object.create(arrayProto);
-
-        const currentPath = rootPath;
-
-        mutatorMethods.forEach((method) => {
-            Object.defineProperty(hijackProto, method, {
-                enumerable: true,
-                configurable: true,
-                writable: true,
-                value: (...args) => {
-                    let yetVal = arr.slice();
-                    let resultVal = arrayProto[method].call(arr, ...args);
-                    let nowVal = arr;
-
-                    BallpenUtil.renderObjectValueByPath(this.$dataListPure, currentPath, nowVal);
-                    // Callback
-                    fns && fns.forEach((fn) => {
-                        fn.call(this, yetVal, nowVal);
-                    }); 
-
-                    return resultVal;
-                } 
-            });
-        });
-        /* eslint-disable */
-        arr.__proto__ = hijackProto;
-        // arr.__proto__.__proto__ === Array.prototype; // true
-    };
-
-    register(obj, objPure, key, fn) {
-        const register = this.$registers.find((item) => {
-            if (Object.is(item.obj, obj) && (item.key === key || item.key.toString() === key.toString())) {
-                return item;
-            }
-        });
-
-        if (register) {
-            register.fns.push(fn);
-        } else {
-            this.$registers.push({
-                obj: obj,
-                rootPath: [],
-                key: key,
-                fns: [fn]
-            });
-        }
-    };
-
-    attach() {
-        this.$registers.forEach((register) => {
-            this.observeKey(register.obj, register.rootPath, register.key, register.fns);
-        });
-    };
-
 }
 
 export default Ballpen;

@@ -141,6 +141,12 @@ new Ballpen("#app", {
 
 > e.g: [examples/core-lifecycle.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/core-lifecycle.html)
 
+* **Computed Attributes**
+
+> Computed attribute is a kind of data type based on any other basic data's computing result. When one of dependent basic data has changed, the computed attribute will be updated synchronously.
+
+> e.g: [examples/core-computed.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/core-computed.html)
+
 ## Plugin System
 
 ### Build-in Plugins

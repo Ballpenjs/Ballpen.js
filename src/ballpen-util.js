@@ -1,3 +1,5 @@
+import Filter from './ballpen-filter.js';
+
 class BallpenUtil {
     static findReferenceNode(obj, map = new Map(), root = '') {
         let _root = root;
@@ -43,6 +45,10 @@ class BallpenUtil {
         return Object.prototype.toString.call(obj) === '[object Object]';
     };
 
+    static isNumber(obj) {
+        return Object.prototype.toString.call(obj) === '[object Number]';
+    };
+
     static isReferenceType(obj) {
         return BallpenUtil.isObject(obj) || BallpenUtil.isArray(obj);
     }
@@ -70,7 +76,24 @@ class BallpenUtil {
         }
     };
 
-    static parseData(str, dataObj) {
+    static parseData(str, dataObj, comObj = {}) {
+        if (str.charAt(0) === '*') {
+            let _data = {
+                path: {
+                    real: str,
+                    base: comObj['_reference'][str.substring(1)]
+                },
+                data: comObj[str.substring(1)]
+            };
+
+            // For mustache
+            _data.path.join = (splitter) => {
+                return _data.path.real;
+            };
+
+            return _data;
+        }
+
         const _list = str.split('.');
         let _data = dataObj;
         let p = [];
@@ -138,13 +161,6 @@ class BallpenUtil {
         (BallpenUtil.isArray(relPath) && relPath.length > 0 ? relPath.join('.') : (relPath.toString().length > 0 ? relPath.toString() : ''));
     };
 
-    static throwError(err, desc) {
-        let _e = new Error(`[Ballpen Parser Error] \n\n [Message] \n\n - ${err} \n\n [Description] \n\n - ${desc} \n`); 
-        _e.name = 'BallpenError';     
-
-        throw _e;           
-    };
-    
     static randomSequence(n) {
         let chars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
         let res = '';
@@ -155,6 +171,17 @@ class BallpenUtil {
         }
 
         return res;
+    }
+
+    static analyzeComputedReference(fnString, dataObj) {
+        let pathes = Filter.filterParams(fnString);
+        let references = [];
+
+        pathes.forEach((value, key) => {
+            references.push(value);
+        });
+
+        return references;
     }
 }
 
