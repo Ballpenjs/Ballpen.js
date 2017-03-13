@@ -1,4 +1,4 @@
-class Filter {
+class BallpenFilter {
     static filterParams (fnStr) {
         let parmsPath = [];
         let parm = fnStr.match(/\(([a-zA-Z0-9_$]*?)\)/i)[1];
@@ -10,7 +10,7 @@ class Filter {
 
                 rawPathes.forEach((value, key) => {
                     if (key > 0) {
-                        resultSet.add(Filter._parseObjectToPath(value));
+                        resultSet.add(BallpenFilter._parseObjectToPath(value));
                     }
                 });
 
@@ -26,4 +26,4 @@ class Filter {
     }
 }
 
-export default Filter;
+export default BallpenFilter;

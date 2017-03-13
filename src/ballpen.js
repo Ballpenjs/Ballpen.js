@@ -1,5 +1,6 @@
 import BallpenUtil from './ballpen-util.js';
 import BallpenObserver from './ballpen-observer.js';
+import BallpenDecorator from './ballpen-decorator.js';
 import BallpenError from './ballpen-error.js';
 import BallpenGlobalWrapper from './ballpen-global-wrapper.js';
 
@@ -100,6 +101,15 @@ class Ballpen {
                 this.$computedList['_reference'][key] = BallpenUtil.analyzeComputedReference(dataModel.computed[key].toString(), this.$dataListPure);
                 this.$computedList['_fn'][key] = dataModel.computed[key];
                 this.$computedList[key] = dataModel.computed[key].call(this, this.$dataListPure);
+            }
+        }
+
+        // Decorators
+        if (dataModel.decorators) {
+            let _decoratorsModel = dataModel.decorators;
+            this.$decoratorList = {};
+            for (let key in _decoratorsModel) {
+                this.$decoratorList[key] = _decoratorsModel[key];
             }
         }
 
@@ -314,10 +324,21 @@ class Ballpen {
     };
 
     bindShow(el, rootPath = []) {
-        const modelName = BallpenUtil.wrapAbsPath(rootPath, el.getAttribute('bp-show')); 
+        let _t = el.getAttribute('bp-show');
+        // Set decorators
+        const decoratorsList = BallpenDecorator.analyzeDecoratorDependency(_t);
+
+        const modelName = BallpenUtil.wrapAbsPath(rootPath, decoratorsList.raw); 
 
         BallpenUtil.ignoreInnerDirectives(modelName, [], (el) => {
             const model = BallpenUtil.parseData(modelName, this.$dataList, this.$computedList);
+            
+            let fakeData = BallpenUtil.clone(model.data);
+
+            // Deal with decorators
+            decoratorsList.decorators.forEach((_v) => {
+                fakeData = $decoratorList[_v].call(this, fakeData);
+            });
 
             const elStyle = el.style;
  
@@ -334,7 +355,7 @@ class Ballpen {
     bindModel(el, rootPath = []) {
         const modelName = BallpenUtil.wrapAbsPath(rootPath, el.getAttribute('bp-model'));
 
-        BallpenUtil.ignoreInnerDirectives(modelName, [/^@{([\d]+)}$/ig], (el) => {
+        BallpenUtil.ignoreInnerDirectives(modelName, [], (el) => {
             // Handel 'for' list index
             if (/^@{([\d]+)}$/ig.test(modelName)) {
                 let index = modelName.match(/^@{([\d]+)}$/)[1];

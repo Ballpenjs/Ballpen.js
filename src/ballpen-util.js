@@ -1,4 +1,4 @@
-import Filter from './ballpen-filter.js';
+import BallpenFilter from './ballpen-filter.js';
 
 class BallpenUtil {
     static findReferenceNode(obj, map = new Map(), root = '') {
@@ -174,7 +174,7 @@ class BallpenUtil {
     }
 
     static analyzeComputedReference(fnString, dataObj) {
-        let pathes = Filter.filterParams(fnString);
+        let pathes = BallpenFilter.filterParams(fnString);
         let references = [];
 
         pathes.forEach((value, key) => {
