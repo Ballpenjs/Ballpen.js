@@ -45,6 +45,10 @@ class BallpenUtil {
         return Object.prototype.toString.call(obj) === '[object Object]';
     };
 
+    static isNumber(obj) {
+        return Object.prototype.toString.call(obj) === '[object Number]';
+    };
+
     static isReferenceType(obj) {
         return BallpenUtil.isObject(obj) || BallpenUtil.isArray(obj);
     }

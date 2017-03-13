@@ -382,7 +382,7 @@ class Ballpen {
             });
             
             for (let pattern in modelsMapper) {
-                subTextNodeValueRendered = subTextNodeValuePure.replace(pattern, modelsMapper[pattern]);
+                subTextNodeValueRendered = subTextNodeValueRendered.replace(pattern, modelsMapper[pattern]);
             }      
         }
 
@@ -468,15 +468,17 @@ class Ballpen {
         let parentNode = el.parentNode;
         let virtualDiv = document.createDocumentFragment();
 
-        for (let i = 0; i < model.data.length; i++) {
+        // Parent scope is a native number -> model.data
+        const iterateCount = model.data.length ? model.data.length : model.data;
+        for (let i = 0; i < iterateCount; i++) {
             let _div = el.cloneNode(true);
             let _dataPath = `${scope[_pScope]}.${i}`;
 
             // Update current scope chain
             scope[_cScope] = _dataPath;
 
-            // Update current index chain
-            indexStack[_cScope] = i;
+            // Update current index chain (start with 1)
+            indexStack[_cScope] = i + 1;
 
             _div.removeAttribute('bp-for');
             _div.setAttribute('bp-for-rendered-id', _identifyKey);
@@ -492,7 +494,9 @@ class Ballpen {
         BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, this.$dataListPure, model.path, (yetVal, nowVal) => {
             let virtualDiv = document.createDocumentFragment();
 
-            for (let i = 0; i < nowVal.length; i++) {
+            // Parent scope is a native number -> nowVal
+            const iterateCount = nowVal.length ? nowVal.length : nowVal;
+            for (let i = 0; i < iterateCount; i++) {
                 let _div = el.cloneNode(true);
                 let _dataPath = `${closureScope[_pScope]}.${i}`;
 
@@ -531,7 +535,6 @@ class Ballpen {
             let childNodes = _thisNode.childNodes;
             childNodes.forEach((item, key) => {
                 if (item.nodeType === Node.TEXT_NODE) {
-                    let subTextNodeValuePure = item.nodeValue;
                     let subTextNodeValueRendered = item.nodeValue;
 
                     let subPatterns = subTextNodeValueRendered.match(/{{.*?}}/ig);
@@ -543,7 +546,7 @@ class Ballpen {
                             let _thisSubModelAbs = _thisSubModel;
 
                             if (/^@/ig.test(_thisSubModel)) {
-                            // Get index
+                                // Get index
                                 if (/\[\[index\]\]/ig.test(_thisSubModel)) {
                                     _thisSubModelAbs = '@{' + `${indexStack[_thisSubModel.match(/^(.*)\[\[index\]\]$/)[1]]}` + '}';
                                 } else {
@@ -553,9 +556,9 @@ class Ballpen {
 
                             modelsMapper[pattern] = `{{ ${_thisSubModelAbs} }}`;
                         });
-                        
+                   
                         for (let pattern in modelsMapper) {
-                            subTextNodeValueRendered = subTextNodeValuePure.replace(pattern, modelsMapper[pattern]);
+                            subTextNodeValueRendered = subTextNodeValueRendered.replace(pattern, modelsMapper[pattern]);
                         }      
                     }
 

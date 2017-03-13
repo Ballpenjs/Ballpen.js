@@ -26,6 +26,7 @@
     <span>{{ name }}</span>
   </ul>
   <br/><br/>
+
   <h3>With 'moustache'</h3>
   <ul>
     <li bp-for="@list in lists">
@@ -42,6 +43,16 @@
     </li>
     <span>{{ name }}</span>
   </ul>
+  <br/><br/>
+
+  <h3>With 'number iterator'</h3>
+  <ul>
+    <li bp-for="@item in iterator">
+        <span>{{ @item[[index]] }} -> {{ author }}</span>
+    </li>
+    <span>{{ name }}</span>
+  </ul>
+
 </div> 
 
 <script src="../dist/ballpen.min.js"></script>
@@ -86,10 +97,12 @@
                 class: "emotion"
             }
         ],
-        name: "Ballpen.js"
+        name: "Ballpen.js",
+        iterator: 10,
+        author: "YHSPY"
     };
 
-    new Ballpen("#app", {
+    window.a = new Ballpen("#app", {
         data: data
     });
 
