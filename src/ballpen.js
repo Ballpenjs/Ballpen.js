@@ -95,12 +95,14 @@ class Ballpen {
             this.$computedList = {};
             for (let key in dataModel.computed) {
                 this.$computedList[key] = {};
-                this.$computedList[key]['_reference'] = BallpenUtil.analyzeComputedReference(dataModel.computed[key].toString(), this.$dataListPure);
-                this.$computedList[key]['_value'] = dataModel.computed[key].call(this, this.$dataListPure);
+                this.$computedList['_reference'] = {};
+                this.$computedList['_fn'] = {};
+                this.$computedList['_reference'][key] = BallpenUtil.analyzeComputedReference(dataModel.computed[key].toString(), this.$dataListPure);
+                this.$computedList['_fn'][key] = dataModel.computed[key];
+                this.$computedList[key] = dataModel.computed[key].call(this, this.$dataListPure);
             }
         }
 
-        console.log(this.$computedList);
         // Other initializations
         this.$registers = [];
     };

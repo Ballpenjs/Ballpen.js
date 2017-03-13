@@ -29,8 +29,8 @@ class Observer {
             Observer.observePath(obj, objPure, rootPath, key, fns);
         } else {
             // Normal attribtues or computed attributes
-            let isComputed = BallpenUtil.isObject(obj[key]);
-            let yetVal = isComputed ? obj[key]['_value'] : obj[key];
+            let isComputed = obj['_reference'] && obj['_fn'];
+            let yetVal = obj[key];
             const currentPath = rootPath;
            
             if (BallpenUtil.isObject(yetVal)) {
@@ -40,16 +40,16 @@ class Observer {
                     },
                     set: (nowVal) => {  
                         if (nowVal !== yetVal) {
+                            // Disabled when update a computed attribute
+                            if (!isComputed) {
+                                BallpenUtil.renderObjectValueByPath(objPure, currentPath, nowVal);
+                            }
+
                             fns && fns.forEach((fn) => {
                                 fn.call(this, yetVal, nowVal);
                             });
 
                             yetVal = nowVal;
-
-                            // Disabled when update a computed attribute
-                            if (!isComputed) {
-                                BallpenUtil.renderObjectValueByPath(objPure, currentPath, nowVal);
-                            }
                         }
                     },
                     enumerable: true,
@@ -66,15 +66,15 @@ class Observer {
                     },
                     set: (nowVal) => {  
                         if (nowVal !== yetVal) {
+                            if (!isComputed) {
+                                BallpenUtil.renderObjectValueByPath(objPure, currentPath, nowVal);
+                            }
+
                             fns && fns.forEach((fn) => {
                                 fn.call(this, yetVal, nowVal);
                             });
 
                             yetVal = nowVal;
-
-                            if (!isComputed) {
-                                BallpenUtil.renderObjectValueByPath(objPure, currentPath, nowVal);
-                            }
                         }
                     },
                     enumerable: true,
@@ -89,15 +89,15 @@ class Observer {
                     },
                     set: (nowVal) => {  
                         if (nowVal !== yetVal) {
+                            if (!isComputed) {
+                                BallpenUtil.renderObjectValueByPath(objPure, currentPath, nowVal);
+                            }
+
                             fns && fns.forEach((fn) => {
                                 fn.call(this, yetVal, nowVal);
                             });
 
                             yetVal = nowVal;
-
-                            if (!isComputed) {
-                                BallpenUtil.renderObjectValueByPath(objPure, currentPath, nowVal);
-                            }
                         }
                     },
                     enumerable: true,
@@ -143,6 +143,7 @@ class Observer {
 
     static register(registers, obj, objCompute, objPure, key, fn) {
         if (BallpenUtil.isObject(key)) {
+            const _rn = key.real.substring(1);
             // For computed attributes
             const register = registers.find((item) => {
                 if (Object.is(item.obj, objCompute) && (item.key === key.real || item.key.toString() === key.real.toString())) {
@@ -155,14 +156,14 @@ class Observer {
             } else {
                 registers.push({
                     obj: objCompute,
-                    rootPath: [],
-                    key: key.real.substring(1),  // Remove '*' at the top of computed attribute
+                    rootPath: '',
+                    key: _rn,  // Remove '*' at the top of computed attribute
                     fns: [fn]
                 });
             }
 
             // Set setter/getter on inner children
-            for (let _k in key.base) {
+            key.base.forEach((_k) => {
                 const register = registers.find((item) => {
                     if (Object.is(item.obj, obj) && (item.key === _k || item.key.toString() === _k.toString())) {
                         return item;
@@ -171,7 +172,8 @@ class Observer {
 
                 let fn = (yetVal, nowVal) => {
                     if (nowVal !== yetVal) { 
-                        console.log(11);
+                        // Update all referenced computed attributes 
+                        objCompute[_rn] = objCompute['_fn'][_rn].call(this, objPure);
                     }
                 };
 
@@ -181,12 +183,12 @@ class Observer {
                     registers.push({
                         obj: obj,
                         objPure: objPure,
-                        rootPath: [],
+                        rootPath: '',
                         key: BallpenUtil.parseData(_k, obj).path,
                         fns: [fn]
                     });
                 }
-            }
+            });
         } else if (BallpenUtil.isArray(key)) {
             const register = registers.find((item) => {
                 if (Object.is(item.obj, obj) && (item.key === key || item.key.toString() === key.toString())) {
@@ -200,7 +202,7 @@ class Observer {
                 registers.push({
                     obj: obj,
                     objPure: objPure,
-                    rootPath: [],
+                    rootPath: '',
                     key: key,
                     fns: [fn]
                 });

@@ -74,13 +74,20 @@ class BallpenUtil {
 
     static parseData(str, dataObj, comObj = {}) {
         if (str.charAt(0) === '*') {
-            return {
+            let _data = {
                 path: {
                     real: str,
-                    base: comObj[str.substring(1)]['_reference']
+                    base: comObj['_reference'][str.substring(1)]
                 },
-                data: comObj[str.substring(1)]['_value']
+                data: comObj[str.substring(1)]
             };
+
+            // For mustache
+            _data.path.join = (splitter) => {
+                return _data.path.real;
+            };
+
+            return _data;
         }
 
         const _list = str.split('.');
@@ -164,10 +171,10 @@ class BallpenUtil {
 
     static analyzeComputedReference(fnString, dataObj) {
         let pathes = Filter.filterParams(fnString);
-        let references = {};
+        let references = [];
 
         pathes.forEach((value, key) => {
-            references[value] = BallpenUtil.parseData(value, dataObj).data;
+            references.push(value);
         });
 
         return references;
