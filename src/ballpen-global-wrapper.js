@@ -20,14 +20,14 @@ class BallpenGlobalWrapper {
         Ballpen.$cache = Cache;
         Ballpen.$cookie = Cookie;
         Ballpen.$animate = Velocity;
-        Ballpen.$wasm = WasmLoader;
+        // Ballpen.$wasm = WasmLoader;
 
         // Global variables
         Ballpen.$refs = {};
 
         // Others
         Ballpen.wasmCore = {}; 
-        Ballpen.wasmCore.algorithm = WasmLoader.extract(WasmBytes.Algorithm());
+        // Ballpen.wasmCore.algorithm = WasmLoader.extract(WasmBytes.Algorithm());
         Ballpen.registerPlugin = BallpenGlobalWrapper.registerPlugin;
     }
 

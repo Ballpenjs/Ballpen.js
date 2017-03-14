@@ -9,15 +9,18 @@
       .s-version {
         color: green;
       }
+      [bp-shade] {
+        display: none;
+      }
     </style>
 </head>
 <body>
 
-<div id="app">
+<div id="app" bp-shade>
   <h1>Ballpen.js Directive - 'bp-class'</h1>
 
-  <p bp-class="class.name">{{ name }}</p>
-  <p bp-class="class.version">{{ version }}</p>
+  <p class="bp-class-name" bp-class="classes.name">{{ name }}</p>
+  <p class="bp-class-version" bp-class="classes.version">{{ version }}</p>
 </div> 
 
 <script src="../dist/ballpen.min.js"></script>
@@ -26,7 +29,7 @@
     let data = {
         name: "Ballpen.js",
         version: "1.0",
-        class: {
+        classes: {
           name: 's-name',
           version: 's-version'
         }

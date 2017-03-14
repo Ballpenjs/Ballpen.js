@@ -15,7 +15,7 @@ if (require.main === module) {
 	var spinner = ora('building for production...');
 	spinner.start();
 } else {
-	console.error(chalk.red("[Ballpen Build Error] You should run this script in a cli like environment!"));
+	console.error(chalk.red('[Ballpen Build Error] You should run this script in a cli like environment!'));
 	return;
 }
 
@@ -33,36 +33,34 @@ mkdir('-p', buildDistPath);
 
 rollup.rollup({
 
-    entry: sourcePathFile,
-    plugins: [
-    	eslint(),
-	    babel({
-	      exclude: '../node_modules/**',
-	      runtimeHelpers: true,
-	    }),
-	    nodeResolve({ 
-	      jsnext: true, 
-	      main: true 
-	    }),
-	    // Convert CommonJS modules to ES2015
-	    commonjs(),
-	    // Compress dist file
-	    uglify(),
-	    // Show generated file size in cli
-	    filesize()
-    ]
+	entry: sourcePathFile,
+	plugins: [
+		eslint(),
+		babel({
+			exclude: '../node_modules/**',
+			runtimeHelpers: true
+		}),
+		nodeResolve({ 
+			jsnext: true, 
+			main: true 
+		}),
+		// Convert CommonJS modules to ES2015
+		commonjs(),
+		// Compress dist file
+		uglify(),
+		// Show generated file size in cli
+		filesize()
+	]
 
 }).then(function (bundle) {
+	bundle.write({
+		format: 'umd',
+		moduleName: 'Ballpen',
+		dest: buildDistPathFile,
+		sourceMap: true
+	});
 
-    bundle.write({
-        format: "umd",
-        moduleName: "Ballpen",
-        dest: buildDistPathFile,
-        sourceMap: true
-    });
-
-    spinner.stop();
-
+	spinner.stop();
 }).catch(function(err) {
 	console.error(chalk.red(err));
 

@@ -2,17 +2,22 @@
 <html>
 <head>
     <title>Ballpen.js Directive - 'bp-bind'</title>
+    <style type="text/css">
+      [bp-shade] {
+        display: none;
+      }
+    </style>
 </head>
 <body>
 
-<div id="app">
+<div id="app" bp-shade>
   <h1>Ballpen.js Directive - 'bp-bind'</h1>
 
-  <p bp-bind:name="attrs.name">{{ name }}</p>
-  <p bp-bind:data-version="attrs.version">{{ version }}</p>
+  <p class="bp-bind-name" bp-bind:name="name">{{ name }}</p>
+  <p class="bp-bind-version" bp-bind:data-version="version">{{ version }}</p>
   <br/>
   <!-- Bind multiple attributes with an object like style -->
-  <p bp-bind="{data-version:attrs.version, name:attrs.name}">Multi-Bind</p>
+  <p class="bp-bind-multi" bp-bind="{multi-bind-version:attrs.version, multi-bind-name:attrs.name}">Multi-Bind</p>
 </div> 
 
 <script src="../dist/ballpen.min.js"></script>

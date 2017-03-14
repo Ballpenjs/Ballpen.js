@@ -31,7 +31,7 @@ class Ballpen {
                 }).then(() => {
                     fn && fn.call(this, dataModel);
                 }).catch((err) => {});
-            } else if (dataModel.lifecycle.afterRender && type === 'afterRender') {
+            } else if (dataModel.lifecycle.afterRneder && type === 'afterRender') {
                 dataModel.lifecycle.afterRender.call(this, rawData);
             } else {
                 fn && fn.call(this, dataModel);
@@ -391,7 +391,7 @@ class Ballpen {
     };
 
     bindClass(el, rootPath = []) {
-        let _t = el.getAttribute('bp-model');
+        let _t = el.getAttribute('bp-class');
 
         // Get relatived decorators
         const decorators = BallpenDecorator.analyzeDecoratorDependency(_t);
