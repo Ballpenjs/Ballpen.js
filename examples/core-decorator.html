@@ -8,7 +8,10 @@
 <div id="app">
   <h1>Ballpen.js - 'Decorator'</h1>
 
-  <p>This is {{ name->:reserve }}, welcome to use! (<span>v{{ version->:reverse }}</span>)</p>
+  <p bp-show="show->:not">Decorator</p>
+  <p bp-model="name->:reverse"></p>
+  <p>{{ name->:reverse }}</p>
+  <p>This is {{ name->:reverse }}, welcome to use! (<span>v{{ version->:reverse }}</span>)</p>
 </div> 
 
 <script src="../dist/ballpen.min.js"></script>
@@ -16,14 +19,18 @@
 
     let data = {
         name: "Ballpen.js",
-        version: "1.0"
+        version: "1.0",
+        show: false
     };
 
-    new Ballpen("#app", {
+    window.a = new Ballpen("#app", {
         data: data,
         decorators: {
-            reserve: (_v) => {
+            reverse: (_v) => {
                 return _v.split("").reverse().join("");
+            },
+            not: (_v) => {
+                return !_v;
             }
         }
     });

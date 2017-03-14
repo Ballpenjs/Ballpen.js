@@ -114,15 +114,15 @@ class BallpenUtil {
         };
     };
 
-    static ignoreInnerDirectives(directiveValue, exceptList, fn, ...args) {
+    static ignoreInnerDirectives(directiveValue, exceptList, fn) {
         exceptList.forEach((regexp) => {
             if (regexp.test(directiveValue)) {
-                fn && fn.call(this, ...args);
+                fn && fn.call(this);
             }
         });
 
         if (!/^@/ig.test(directiveValue)) {
-            fn && fn.call(this, ...args);
+            fn && fn.call(this);
         }
     };
 
