@@ -11,6 +11,6 @@ module.exports = {
       .assert.attributeContains('#app .bp-bind-multi', 'multi-bind-version', 'attr.1.0')
       .assert.attributeContains('#app .bp-bind-multi', 'multi-bind-name', 'attr.ballpen.js')
 
-      .end()
+      .end();
   }
-}
+};

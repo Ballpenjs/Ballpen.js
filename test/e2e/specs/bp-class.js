@@ -9,6 +9,6 @@ module.exports = {
       .assert.attributeContains('#app .bp-class-name', 'class', 's-name')
       .assert.attributeContains('#app .bp-class-version', 'class', 's-version')
 
-      .end()
+      .end();
   }
-}
+};
