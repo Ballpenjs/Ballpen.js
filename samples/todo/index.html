@@ -48,7 +48,7 @@
 <div id="app" bp-shade>
   <h1>Ballpen.js Samples - 'TODO List'</h1>
   <ul>
-    <li bp-for="@todo in todoList" bp-show="@todo.show">
+    <li bp-for="@todo in todoList" bp-show="@todo.show->:not">
       <div class="words">
         <h3>{{ @todo.title }}</h3>
         <h6>{{ @todo.date }}</h6>
@@ -67,27 +67,27 @@
             {
               title: 'Pin note color and more option',
               date: '2017-03-18',
-              show: true
+              done: false
             },
             {
               title: 'Order task in more ways',
               date: '2017-03-17',
-              show: true
+              done: false
             },
             {
               title: 'Sync with Google tasks',
               date: '2017-03-16',
-              show: true
+              done: false
             },
             {
               title: 'Quick add task with due date and priority',
               date: '2017-03-16',
-              show: true
+              done: false
             },
             {
               title: 'More repeat condition',
               date: '2017-03-13',
-              show: true
+              done: false
             }
         ]
     };
@@ -109,6 +109,11 @@
                     }
                 }
             });
+          }
+        },
+        decorators: {
+          not: (_v) => {
+            return !_v;
           }
         }
     });

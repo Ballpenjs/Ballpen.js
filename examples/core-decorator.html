@@ -11,7 +11,14 @@
   <p bp-show="show->:not">Decorator</p>
   <p bp-model="name->:reverse"></p>
   <p>{{ name->:reverse }}</p>
+  <p bp-bind:data-attr="attr->:reverse"></p>
+  <p bp-bind="{ data-ext:ext->:reverse, data-prefix:prefix->:reverse }"></p>
   <p>This is {{ name->:reverse }}, welcome to use! (<span>v{{ version->:reverse }}</span>)</p>
+  <ul>
+    <li bp-for="@list in lists->:push">
+      <p bp-bind:data-ext="@list[[index]]">{{ @list.data->:minus }}</p>
+    </li>
+  </ul>
 </div> 
 
 <script src="../dist/ballpen.min.js"></script>
@@ -20,10 +27,18 @@
     let data = {
         name: "Ballpen.js",
         version: "1.0",
-        show: false
+        show: false,
+        attr: "attribute",
+        ext: "jpg",
+        prefix: "data-",
+        lists: [
+          {data: 1},
+          {data: 2},
+          {data: 3}
+        ]
     };
 
-    window.a = new Ballpen("#app", {
+    new Ballpen("#app", {
         data: data,
         decorators: {
             reverse: (_v) => {
@@ -31,6 +46,16 @@
             },
             not: (_v) => {
                 return !_v;
+            },
+            minus: (_v) => {
+              return _v - 1;
+            },
+            push: (_v) => {
+              _v.push({
+                data: 100
+              });
+
+              return _v;
             }
         }
     });

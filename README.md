@@ -147,6 +147,12 @@ new Ballpen("#app", {
 
 > e.g: [examples/core-computed.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/core-computed.html)
 
+* **Decorator**
+
+> You can use 'Decorator' on any directives with distinct value model, it just like tube operation symbol used in linux shell.
+
+> e.g: [examples/core-decorator.html](https://github.com/Becavalier/Ballpen.js/blob/master/examples/core-decorator.html)
+
 ## Plugin System
 
 ### Build-in Plugins

@@ -1,5 +1,6 @@
 import BallpenUtil from './ballpen-util.js';
 import BallpenObserver from './ballpen-observer.js';
+import BallpenProxy from './ballpen-proxy.js';
 import BallpenDecorator from './ballpen-decorator.js';
 import BallpenError from './ballpen-error.js';
 import BallpenGlobalWrapper from './ballpen-global-wrapper.js';
@@ -87,7 +88,7 @@ class Ballpen {
 
             // Mount watchers
             this.watchersHook.forEach((watcherQueue, path) => {
-                BallpenUtil.renderObjectValueByPath(this.$dataList, path, this.setProxy(path, watcherQueue));
+                BallpenUtil.renderObjectValueByPath(this.$dataList, path, BallpenProxy.setProxy(path, watcherQueue, this.$dataList, this.$dataListPure));
             });
         }
 
@@ -115,60 +116,6 @@ class Ballpen {
 
         // Other initializations
         this.$registers = [];
-    };
-
-    setProxy(path, watcherQueue) {
-        let _dist = BallpenUtil.parseData(path, this.$dataList).data;
-        let _oldVal = BallpenUtil.parseData(path, this.$dataListPure).data;
-
-        let handler = {
-            get: (_target, _property) => {
-                // Run callback
-                watcherQueue.forEach((entity) => {
-                    let _fn = entity.handler;
-                    let _path = entity.root;
-
-                    // _fn && _fn.call(this, BallpenUtil.parseData(_path, this.$dataListPure).data, BallpenUtil.parseData(_path, this.$dataList).data);
-                });
-                
-                return _target[_property];
-            },
-            set: (_target, _property, _value, receiver) => {
-                // Run callback
-                if (_value !== _oldVal[_property]) {
-                    let _pureVal;
-
-                    if (BallpenUtil.isReferenceType(_value)) {
-                        _oldVal[_property] = BallpenUtil.clone(_value);
-                        _pureVal = BallpenUtil.clone(_value);
-                    } else {
-                        _oldVal[_property] = _value;
-                        _pureVal = _value;
-                    }
-
-                    // Update pure data
-                    BallpenUtil.renderObjectValueByPath(this.$dataListPure, `${path}.${_property}`, _pureVal);
-                    
-                    _target[_property] = _value;
-
-                    watcherQueue.forEach((entity) => {
-                        let _fn = entity.handler;
-                        let _path = entity.root;
-
-                        _fn && _fn.call(this, BallpenUtil.parseData(_path, this.$dataListPure).data, BallpenUtil.parseData(_path, this.$dataList).data);
-                    });
-                }
-
-                // Return true to accept the changes
-                return true;
-            },
-            defineProperty: (target, prop, descriptor) => {
-                return Reflect.defineProperty(target, prop, descriptor);
-            }
-        };
-
-        // Can not set a proxy on a single value (!! need to be fixed !!)
-        return new Proxy(_dist, handler);
     };
 
     initEventList(eventList) {
@@ -233,18 +180,19 @@ class Ballpen {
                         let _i = _attr;
 
                         if (/bp-bind:/ig.test(_i.name)) {
-                            // Single event
+                            // Single bind
                             attrsBindedList.push({
                                 _bindKey: _i.name.split(':')[1],
                                 _thisSubModelAbs: _i.value 
                             });
                         } else {
-                            // Multi events
-                            let bindArrs = _i.value.match(/[a-zA-Z0-9_$-]+:[a-zA-Z0-9_$.]+/ig);
+                            // Multi bind
+                            let bindArrs = _i.value.match(/[a-zA-Z0-9_$-]+:[a-zA-Z0-9_$.\->:()]+/ig);
                             bindArrs.forEach((binder) => {
+                                const _t = binder.split(/:+?/);
                                 attrsBindedList.push({
-                                    _bindKey: binder.split(':')[0],
-                                    _thisSubModelAbs: binder.split(':')[1] 
+                                    _bindKey: _t[0],
+                                    _thisSubModelAbs: _t.slice(1).join(':') 
                                 });
                             });
                         }
@@ -443,19 +391,32 @@ class Ballpen {
     };
 
     bindClass(el, rootPath = []) {
-        const modelName = BallpenUtil.wrapAbsPath(rootPath, el.getAttribute('bp-class'));
+        let _t = el.getAttribute('bp-model');
+
+        // Get relatived decorators
+        const decorators = BallpenDecorator.analyzeDecoratorDependency(_t);
+
+        // Get absolute path of the model
+        const modelName = BallpenUtil.wrapAbsPath(rootPath, decorators.modelPath);
 
         BallpenUtil.ignoreInnerDirectives(modelName, [], () => {
             const model = BallpenUtil.parseData(modelName, this.$dataList, this.$computedList);
 
-            if (!el.classList.contains(model.data)) {
-                el.classList.add(model.data);
+            // Decoration
+            let _v = BallpenDecorator.decorate(this.$decoratorList, decorators, model.data);
+
+            if (!el.classList.contains(_v)) {
+                el.classList.add(_v);
             }
 
             BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, this.$dataListPure, model.path, (yetVal, nowVal) => {
-                el.classList.remove(yetVal);
-                if (!el.classList.contains(nowVal)) {
-                    el.classList.add(nowVal);
+                // Decoration
+                let _y = BallpenDecorator.decorate(this.$decoratorList, decorators, yetVal);
+                let _v = BallpenDecorator.decorate(this.$decoratorList, decorators, nowVal);
+
+                el.classList.remove(_y);
+                if (!el.classList.contains(_v)) {
+                    el.classList.add(_v);
                 }
             });
         });
@@ -481,22 +442,33 @@ class Ballpen {
 
     bindBind(el, _bindValue, _bindKey, rootPath = []) {
         BallpenUtil.ignoreInnerDirectives(_bindValue, [], () => {
-            const modelName = BallpenUtil.wrapAbsPath(rootPath, _bindValue);
+            // Get relatived decorators
+            const decorators = BallpenDecorator.analyzeDecoratorDependency(_bindValue);
+
+            // Get absolute path of the model
+            const modelName = BallpenUtil.wrapAbsPath(rootPath, decorators.modelPath); 
+
             const model = BallpenUtil.parseData(modelName, this.$dataList, this.$computedList);
 
+            // Decoration
+            let _v = BallpenDecorator.decorate(this.$decoratorList, decorators, model.data);
+
             // Set customized attribute
-            el.setAttribute(_bindKey, model.data);
+            el.setAttribute(_bindKey, _v);
             
             // Bind listener, set callback fn to global data context
             BallpenObserver.register(this.$registers, this.$dataList, this.$computedList, this.$dataListPure, model.path, (yetVal, nowVal) => {
-                el.setAttribute(_bindKey, nowVal);
+                // Decoration
+                let _v = BallpenDecorator.decorate(this.$decoratorList, decorators, nowVal);
+
+                el.setAttribute(_bindKey, _v);
             });
         });
     };
 
     bindFor(el, scope = {}, indexStack = {}) {
         const modelPaths = el.getAttribute('bp-for').split(/\s+in\s+/);
-        const _pScope = modelPaths[1];
+        const _pScope = modelPaths[1].split(/->:/i)[0];
         const _cScope = modelPaths[0];
         const _identifyKey = BallpenUtil.randomSequence(12);
 
@@ -516,13 +488,20 @@ class Ballpen {
         let closureScope = BallpenUtil.clone(scope);
         let closureIndexStack = BallpenUtil.clone(indexStack);
 
+        // Only get relatived decorators, without data path
+        const decorators = BallpenDecorator.analyzeDecorators(modelPaths[1]);
+
+        // Render data model from analyzed bundle "scope[_pScope]", not from parent scope directly
         const model = BallpenUtil.parseData(scope[_pScope], this.$dataList, this.$computedList);
-        
+
+        // Decoration
+        let _v = BallpenDecorator.decorate(this.$decoratorList, decorators, model.data, false);
+
         let parentNode = el.parentNode;
         let virtualDiv = document.createDocumentFragment();
 
         // Parent scope is a native number -> model.data
-        const iterateCount = model.data.length ? model.data.length : model.data;
+        const iterateCount = _v.length ? _v.length : _v;
         for (let i = 0; i < iterateCount; i++) {
             let _div = el.cloneNode(true);
             let _dataPath = `${scope[_pScope]}.${i}`;
@@ -589,6 +568,7 @@ class Ballpen {
             childNodes.forEach((item, key) => {
                 if (item.nodeType === Node.TEXT_NODE) {
                     let subTextNodeValueRendered = item.nodeValue;
+                    let subTextNodeValuePure = item.nodeValue;
 
                     let subPatterns = subTextNodeValueRendered.match(/{{.*?}}/ig);
                     let modelsMapper = {};
@@ -616,6 +596,7 @@ class Ballpen {
                     }
 
                     item.nodeValue = subTextNodeValueRendered;
+                    subTextNodeValueRendered = subTextNodeValuePure;
 
                     this.bindMoustache(_thisNode, item);
                 }
@@ -677,18 +658,19 @@ class Ballpen {
                     let attrsBindedList = [];
 
                     if (/bp-bind:/ig.test(_i.name)) {
-                        // Single event
+                        // Single bind
                         attrsBindedList.push({
                             _bindKey: _i.name.split(':')[1],
                             _thisSubModelAbs: _i.value 
                         });
                     } else {
-                        // Multi events
-                        let bindArrs = _i.value.match(/[a-zA-Z0-9_$-]+:[a-zA-Z0-9_$.]+/ig);
+                        // Multi bind
+                        let bindArrs = _i.value.match(/[a-zA-Z0-9_$-]+:[a-zA-Z0-9_$.\->:()]+/ig);
                         bindArrs.forEach((binder) => {
+                            const _t = binder.split(/:+?/);
                             attrsBindedList.push({
-                                _bindKey: binder.split(':')[0],
-                                _thisSubModelAbs: binder.split(':')[1] 
+                                _bindKey: _t[0],
+                                _thisSubModelAbs: _t.slice(1).join(':') 
                             });
                         });
                     }

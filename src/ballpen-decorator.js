@@ -9,9 +9,18 @@ class BallpenDecorator  {
 		};
 	}
 
-    static decorate(globalDecoratorList, decoratorsList, value) {
+    static analyzeDecorators(str) {
+        return {
+            decorators: str.split('->:').slice(1)
+        };
+    }
+
+    static decorate(globalDecoratorList, decoratorsList, value, clone = true) {
         // Prevent data pollution
-        let _f = BallpenUtil.clone(value);
+        let _f = value;
+        if (clone) {
+            let _f = BallpenUtil.clone(value);
+        } 
 
         // Deal with decorators
         decoratorsList.decorators.forEach((_v) => {
