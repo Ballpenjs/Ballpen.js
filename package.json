@@ -9,7 +9,8 @@
     "lint": "eslint src build test",
     "test:server": "node ./node_modules/browser-sync/bin/browser-sync start --server ./",
     "test:e2e": "node test/e2e/runner.js",
-    "test": "npm run build && npm run lint && npm run test:e2e"
+    "test": "npm run build && npm run lint && npm run test:e2e",
+    "release": "bash build/release.sh"
   },
   "repository": {
     "type": "git",
