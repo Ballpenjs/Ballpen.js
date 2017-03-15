@@ -13,6 +13,11 @@ class Ballpen {
         // Save instance identifier
         this.$id = this.$dataModel.name ? this.$dataModel.name.trim() : BallpenUtil.randomSequence(6);
 
+        // Set wasm path
+        if (this.$dataModel.wasmPath) {
+            Ballpen.wasmPath = this.$dataModel.wasmPath.trim();
+        }
+
         // Set $refs, $http, etc those global sets before initializaiton
         BallpenGlobalWrapper.set(Ballpen);
 

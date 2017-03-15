@@ -1,4 +1,4 @@
-class WASMLoader {
+class Wasm {
     static load(path, imports = {}) {
         return fetch(path)
           .then(response => response.arrayBuffer())
@@ -22,13 +22,11 @@ class WASMLoader {
                   C++ Name Demangler: https://demangler.com/
                */
         });
-    }
+    };
 
-    static extract(wasmByteStr, imports = {}) {
-        return WebAssembly.compile(new Uint8Array(wasmByteStr.trim().split(/[\s\r\n]+/g).map(str => parseInt(str, 16)))).then(module => {
-            return new WebAssembly.Instance(module, imports);
-        });
-    }
+    static loadAll(path) {
+
+    };
 }
 
-export default WASMLoader;
+export default Wasm;

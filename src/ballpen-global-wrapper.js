@@ -7,8 +7,7 @@ import Cookie from 'ballpen-plugin-cookie';
 import Cache from 'ballpen-plugin-cache';
 
 // Ballpen wasm loader
-import WasmLoader from './ballpen-wasm-loader.js';
-import WasmBytes from './ballpen-wasm-bytes.js';
+import Wasm from './ballpen-wasm.js';
 
 class BallpenGlobalWrapper {
     static set(Ballpen) {
@@ -20,14 +19,15 @@ class BallpenGlobalWrapper {
         Ballpen.$cache = Cache;
         Ballpen.$cookie = Cookie;
         Ballpen.$animate = Velocity;
-        // Ballpen.$wasm = WasmLoader;
 
         // Global variables
         Ballpen.$refs = {};
 
         // Others
-        Ballpen.wasmCore = {}; 
-        // Ballpen.wasmCore.algorithm = WasmLoader.extract(WasmBytes.Algorithm());
+        if (window.WebAssembly && Ballpen.wasmPath) {
+            Ballpen.wasmCore = {}; 
+            Ballpen.wasmCore = Wasm.loadAll(Ballpen.wasmPath);
+        }
     }
 
     static registerPlugin(alias, pluginEntity) {
