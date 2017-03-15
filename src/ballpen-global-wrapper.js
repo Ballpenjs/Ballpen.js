@@ -28,7 +28,6 @@ class BallpenGlobalWrapper {
         // Others
         Ballpen.wasmCore = {}; 
         // Ballpen.wasmCore.algorithm = WasmLoader.extract(WasmBytes.Algorithm());
-        Ballpen.registerPlugin = BallpenGlobalWrapper.registerPlugin;
     }
 
     static registerPlugin(alias, pluginEntity) {

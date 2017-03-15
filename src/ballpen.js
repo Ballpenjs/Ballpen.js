@@ -10,8 +10,18 @@ class Ballpen {
     constructor(el, dataModel) { 
         this.$dataModel = dataModel;
 
+        // Save instance identifier
+        this.$id = this.$dataModel.name ? this.$dataModel.name.trim() : BallpenUtil.randomSequence(6);
+
         // Set $refs, $http, etc those global sets before initializaiton
         BallpenGlobalWrapper.set(Ballpen);
+
+        // Set a global bus including all instances
+        if (!Ballpen.bus) {
+            Ballpen.bus = {};
+        }
+
+        Ballpen.bus[this.$id] = this.$dataModel;
 
         this.lifecycleHookPoint('beforeRender', this.$dataModel, () => {
             // Init EventList
@@ -58,6 +68,9 @@ class Ballpen {
             this.data = this.$dataListPure;
 
             this.$dataList = BallpenUtil.clone(dataModel.data);
+
+            // Save observer data to global bus
+            Ballpen.bus[this.$id]['_obs'] = this.$dataList;
         }
 
         // Events
@@ -112,6 +125,11 @@ class Ballpen {
             for (let key in _decoratorsModel) {
                 this.$decoratorList[key] = _decoratorsModel[key];
             }
+        }
+
+        // Components
+        if (dataModel.components) {
+            
         }
 
         // Other initializations

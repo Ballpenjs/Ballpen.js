@@ -11,7 +11,7 @@
   <p>{{ *name }}</p>
   <p>{{ name }}</p>
   <p>{{ appendix }}</p>
-  <button bp-event:click="ALTER">ALTER</button>
+  <button bp-event:click="alter">ALTER</button>
 </div> 
 
 <script src="../dist/ballpen.min.js"></script>
@@ -30,7 +30,7 @@
           }
         },
         events: {
-          ALTER: (el, context) => {
+          alter: (el, context) => {
             context.name = context.name.split('.').reverse().join('.');
           }
         }

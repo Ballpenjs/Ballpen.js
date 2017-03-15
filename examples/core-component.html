@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ballpen.js - 'Component'</title>
+</head>
+<body>
+
+<div id="app">
+  <h1>Ballpen.js - 'Component'</h1>
+  <p>{{ name }} -> {{ version }}</p>
+</div> 
+
+<div id="side">
+  <!-- Set a div placeholder for component place -->
+  <p>{{ name }}</p>
+</div>
+
+<script src="../dist/ballpen.min.js"></script>
+<script type="text/javascript">
+    // Child
+    let app = new Ballpen("#app", {
+        name: "app",
+        data: {
+            name: "Ballpen.js",
+            version: "1.0"
+        }
+    });
+
+    // Parent
+    let side = new Ballpen("#side", {
+        name: "side",
+        data: {
+            name: "Side App",
+            mixin: {
+                mixin: 'This is a mixin data'
+            }
+        },
+        components: {
+            "app": (getter) => {
+                return getter.mixin;
+            }
+        }
+    });
+
+</script>
+</body>
+</html> 
+
