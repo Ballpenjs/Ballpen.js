@@ -32,7 +32,7 @@ class Observer {
             let isComputed = obj['_reference'] && obj['_fn'];
             let yetVal = obj[key];
             const currentPath = rootPath;
-           
+
             if (BallpenUtil.isObject(yetVal)) {
                 Object.defineProperty(obj, key, {
                     get: () => {
@@ -142,6 +142,7 @@ class Observer {
     };
 
     static register(registers, obj, objCompute, objPure, key, fn) {
+        // Computed 
         if (BallpenUtil.isObject(key)) {
             const _rn = key.real.substring(1);
             // For computed attributes
@@ -156,6 +157,7 @@ class Observer {
             } else {
                 registers.push({
                     obj: objCompute,
+                    path: _rn.join('.'),
                     rootPath: '',
                     key: _rn,  // Remove '*' at the top of computed attribute
                     fns: [fn]
@@ -180,11 +182,13 @@ class Observer {
                 if (register) {
                     register.fns.push(fn);
                 } else {
+                    let key = BallpenUtil.parseData(_k, obj).path;
                     registers.push({
                         obj: obj,
                         objPure: objPure,
+                        path: key.join('.'),
                         rootPath: '',
-                        key: BallpenUtil.parseData(_k, obj).path,
+                        key: key,
                         fns: [fn]
                     });
                 }
@@ -202,6 +206,7 @@ class Observer {
                 registers.push({
                     obj: obj,
                     objPure: objPure,
+                    path: key.join('.'),
                     rootPath: '',
                     key: key,
                     fns: [fn]

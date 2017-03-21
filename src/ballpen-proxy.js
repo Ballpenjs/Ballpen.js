@@ -3,37 +3,29 @@ import BallpenUtil from './ballpen-util.js';
 class BallpenProxy {
 	static setProxy(path, watcherQueue, dataList, dataListPure) {
         let _dist = BallpenUtil.parseData(path, dataList).data;
-        let _oldVal = BallpenUtil.parseData(path, dataListPure).data;
+        let _ov = BallpenUtil.parseData(path, dataListPure).data;
 
         let handler = {
             get: (_target, _property) => {
-                // Run callback
-                watcherQueue.forEach((entity) => {
-                    let _fn = entity.handler;
-                    let _path = entity.root;
-
-                    // _fn && _fn.call(this, BallpenUtil.parseData(_path, dataListPure).data, BallpenUtil.parseData(_path, dataList).data);
-                });
-                
                 return _target[_property];
             },
-            set: (_target, _property, _value, receiver) => {
+            set: (_target, _property, _v, receiver) => {
                 // Run callback
-                if (_value !== _oldVal[_property]) {
-                    let _pureVal;
+                if (_v !== _ov[_property]) {
+                    let _pv;
 
-                    if (BallpenUtil.isReferenceType(_value)) {
-                        _oldVal[_property] = BallpenUtil.clone(_value);
-                        _pureVal = BallpenUtil.clone(_value);
+                    if (BallpenUtil.isReferenceType(_v)) {
+                        _ov[_property] = BallpenUtil.clone(_v);
+                        _pv = BallpenUtil.clone(_v);
                     } else {
-                        _oldVal[_property] = _value;
-                        _pureVal = _value;
+                        _ov[_property] = _v;
+                        _pv = _v;
                     }
 
                     // Update pure data
-                    BallpenUtil.renderObjectValueByPath(dataListPure, `${path}.${_property}`, _pureVal);
+                    BallpenUtil.renderObjectValueByPath(dataListPure, `${path}.${_property}`, _pv);
                     
-                    _target[_property] = _value;
+                    _target[_property] = _v;
 
                     watcherQueue.forEach((entity) => {
                         let _fn = entity.handler;

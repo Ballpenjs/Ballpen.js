@@ -1,4 +1,5 @@
 import BallpenFilter from './ballpen-filter.js';
+import BallpenError from './ballpen-error.js';
 
 class BallpenUtil {
     static findReferenceNode(obj, map = new Map(), root = '') {
@@ -27,7 +28,7 @@ class BallpenUtil {
         }
 
         return map;
-    }
+    };
     
 	static isHTMLCollection(obj) {
         return Object.prototype.toString.call(obj) === '[object HTMLCollection]';
@@ -39,7 +40,7 @@ class BallpenUtil {
 
     static toArray(collection) {
         return Array.prototype.slice.call(collection);
-    }
+    };
 
     static isObject(obj) {
         return Object.prototype.toString.call(obj) === '[object Object]';
@@ -51,13 +52,13 @@ class BallpenUtil {
 
     static isReferenceType(obj) {
         return BallpenUtil.isObject(obj) || BallpenUtil.isArray(obj);
-    }
+    };
 
     static renderObjectValueByPath(obj, path, val) {
         let _paths = path.split('.');
 
         if (typeof BallpenUtil.parseData(path, obj).data === 'undefined') {
-            BallpenUtil.throwError(`Find an invalid watcher path when initializing Ballpen.js -> "${path}"`, 'Please make sure the watcher path you set is exist and valid.');  
+            BallpenError.trigger('INVALID_RENDER_PATH', path);
         }
 
         if (_paths.length === 1) {
@@ -66,7 +67,7 @@ class BallpenUtil {
             for (let i = 0; i < _paths.length - 1; i++) {
                 obj = obj[_paths[i]];
                 if (!obj) {
-                    BallpenUtil.throwError(`Find an invalid watcher path when initializing Ballpen.js -> "${path}"`, 'Please make sure the watcher path you set is exist and valid.');  
+                    BallpenError.trigger('INVALID_RENDER_PATH', path);
                 }
 
                 if (i === _paths.length - 2) {
@@ -153,7 +154,7 @@ class BallpenUtil {
             return copy;
         }
 
-        BallpenUtil.throwError('Internal error, unable to copy object, type is not supported.', 'Please contact the author to fix this issue.');  
+        BallpenError.trigger('INTERNEL_INVALID_CLONE');
     };
 
     static wrapAbsPath(rootPath, relPath) {
@@ -171,7 +172,7 @@ class BallpenUtil {
         }
 
         return res;
-    }
+    };
 
     static analyzeComputedReference(fnString, dataObj) {
         let pathes = BallpenFilter.filterParams(fnString);
@@ -182,7 +183,7 @@ class BallpenUtil {
         });
 
         return references;
-    }
+    };
 }
 
 export default BallpenUtil;
