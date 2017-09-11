@@ -10,7 +10,7 @@
     "test:server": "node ./node_modules/browser-sync/bin/browser-sync start --server ./",
     "test:e2e": "node test/e2e/runner.js",
     "test": "npm run build && npm run lint && npm run test:e2e",
-    "release": "bash build/release.sh"
+    "release": "bash build/releasen.sh"
   },
   "repository": {
     "type": "git",
@@ -22,9 +22,7 @@
     "ballpen",
     "es6",
     "Two-way binding",
-    "plugin",
-    "wasm",
-    "webassembly"
+    "plugin"
   ],
   "author": "YHSPY",
   "license": "MIT",
@@ -35,8 +33,7 @@
   "devDependencies": {
     "babel-core": "^6.22.1",
     "babel-eslint": "^7.1.1",
-    "babel-loader": "^6.2.10",
-    "babel-preset-es2015": "^6.22.0",
+    "babel-preset-es2015-rollup": "^3.0.0",
     "babel-preset-stage-0": "^6.22.0",
     "babel-runtime": "^6.22.0",
     "browser-sync": "^2.18.8",
@@ -59,17 +56,13 @@
     "rollup-plugin-commonjs": "^7.0.0",
     "rollup-plugin-eslint": "^3.0.0",
     "rollup-plugin-filesize": "^1.0.1",
-    "rollup-plugin-node-resolve": "^2.0.0",
+    "rollup-plugin-json": "^2.3.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-resolve": "^2.1.1",
     "rollup-plugin-uglify": "^1.0.1",
     "rollup-watch": "^3.2.2",
     "selenium-server": "^3.3.1",
     "shelljs": "^0.7.6"
   },
-  "dependencies": {
-    "axios": "^0.15.3",
-    "ballpen-plugin-cache": "^0.1.1",
-    "ballpen-plugin-cookie": "^0.1.0",
-    "underscore": "^1.8.3",
-    "velocity-animate": "^1.4.3"
-  }
+  "dependencies": {}
 }
