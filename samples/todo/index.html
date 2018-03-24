@@ -96,19 +96,7 @@
         data: data,
         events: {
           doneIt: (el, context, ...args) => {
-            Ballpen.$animate(el.parentNode, {
-              opacity: 0, 
-              translateX: "200px"
-            }, {
-                progress: function(elements, complete, remaining, start, tweenValue) {
-                    if(complete == 1) {
-                      el.parentNode.style.display = 'none';
-
-                      // Send ajax request or do any other opeartions you want
-
-                    }
-                }
-            });
+            el.parentNode.style.display = 'none';
           }
         },
         decorators: {

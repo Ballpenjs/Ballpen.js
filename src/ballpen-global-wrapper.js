@@ -5,7 +5,6 @@ class BallpenGlobalWrapper {
     static set(Ballpen) {
         Ballpen.registerPlugin = BallpenGlobalWrapper.registerPlugin;
 
-
         // Global variables
         Ballpen.$refs = {};
 
